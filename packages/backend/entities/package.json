@@ -1,0 +1,19 @@
+{
+  "name": "@kiste/backend-entities",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
+  "homepage": "",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}
