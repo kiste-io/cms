@@ -1,3 +1,3 @@
-# kiste.io headless CMS
+# kiste.io
 
-CMS for organisations of any size
+### headless CMS CMS for organisations of any size
