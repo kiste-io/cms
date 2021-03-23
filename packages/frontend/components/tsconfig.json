@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+      "outDir": "./lib/",
+      "esModuleInterop": true,
+      "jsx": "react",
+      "target": "es5",
+      "allowJs": true
+    }
+  }

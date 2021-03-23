@@ -1,0 +1,23 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import {Button} from '.'
+
+
+<Meta title="Components / Button" />
+
+
+# Button
+<Canvas>
+    <Story name="default">
+        <Button label='Button' />
+    </Story>
+    
+    <Story name="primary">
+        <Button primary label='Button' />
+    </Story>
+     <Story name="large">
+        <Button label='Button' size="large" />
+    </Story>
+    <Story name="small">
+        <Button label='Button' size="small" />
+    </Story>
+</Canvas>

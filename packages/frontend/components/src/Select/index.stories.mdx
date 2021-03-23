@@ -1,0 +1,17 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import {Select} from '.'
+
+
+<Meta title="Components / Select" />
+
+
+# Button
+<Canvas>
+    <Story name="default">
+        <Select 
+            label='Input Text' 
+            name='name' 
+            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]} 
+        />
+    </Story>
+</Canvas>
