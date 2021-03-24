@@ -1,7 +1,52 @@
+
+@import 'variables';
+
+
 .Input {
     position: relative;
 
+    > input, > label {
+        font-family: $font-family-text;
+        font-weight: 500;
+        font-size: 14px;
+        padding: $padding-medium-medium;
+    }
+
+    > input {       
+        color: $color-default;
+        outline-color: $color-primary;
+        background-color: transparent;
+        box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+        border:none;
+        border-radius: 4px;
+        line-height: 1.4;
+
+        &:focus, &.filled {
+            + label {
+                font-size: .7rem;
+                top: -.9rem;
+                left: -1rem;
+                color: $color-default-100;
+                font-weight: 500;
+
+            }
+        }
+
+        &:hover {
+            background-color: $color-primary-30;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2px 1px;
+
+        }
+       
+    }
+
     > label {
+        left: 0px;
+        top: 0px;
         position: absolute;
+        transition: all 0.2s;
+
+        color: $color-default-500;
+
     }
 }

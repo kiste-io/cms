@@ -23,13 +23,14 @@ module.exports = {
                     loader: 'css-loader',
                     options: {
                         modules: true,
-                        sourceMap: isDevelopment
                       }
                 },
                 {
                   loader: 'sass-loader',
                   options: {
-                      sourceMap: isDevelopment
+                    sassOptions: {
+                      includePaths: ["src/styles"],
+                    }
                   }
                 }
             ]
@@ -41,10 +42,7 @@ module.exports = {
              MiniCssExtractPlugin.loader,
              'css-loader',
              {
-               loader: 'sass-loader',
-               options: {
-                 sourceMap: isDevelopment
-               }
+               loader: 'sass-loader'
              }
            ]
          }
@@ -62,6 +60,10 @@ module.exports = {
     },
     output: {
       filename: 'index.js',
-      path: path.resolve(__dirname, 'lib'),
+      libraryTarget: 'umd',
+      path: path.resolve(__dirname, 'lib')
     },
+    externals: {
+      'react': 'react'
+    }
   }

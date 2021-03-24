@@ -30,7 +30,14 @@ module.exports = {
             }            
           }
         }, 
-        'sass-loader'
+        {
+          loader: 'sass-loader',
+          options: {
+            sassOptions: {
+              includePaths: ["src/styles"],
+            }
+          }
+        }
       ],
       include: path.resolve(__dirname, '../'),
     });

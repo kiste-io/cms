@@ -1,10 +1,10 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "bootstrap": "lerna bootstrap --hoist=react --hoist=react-dom"
+  },
   "devDependencies": {
     "lerna": "^3.22.1"
-  },
-  "dependencies": {
-    "express": "^4.17.1"
   }
 }

@@ -1,0 +1,12 @@
+@use "sass:color";
+
+$color-primary: #1ea7fd;
+$color-primary-1100: color.adjust($color-primary, $lightness: -10%);
+$color-primary-1200: color.adjust($color-primary, $lightness: -20%);
+$color-primary-30: color.adjust($color-primary, $alpha: -.97);
+
+
+$color-default: #333;
+$color-default-500: #999;
+$color-default-100: #aaa;
+$color-default-50: #f1f1f1;

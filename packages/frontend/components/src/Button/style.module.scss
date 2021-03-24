@@ -1,22 +1,30 @@
+@import 'variables';
 
 .Button {
     
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: $font-family-text;
     font-weight: 700;
     border: 0;
     border-radius: 3em;
     cursor: pointer;
     display: inline-block;
     line-height: 1;
-  
+    transition: all .2s;
+
   &.primary {
     color: white;
-    background-color: #1ea7fd;
+    background-color: $color-primary;
+    &:hover {
+      background-color: $color-primary-1100;
+    }
   }
   &.default {
     color: #333;
     background-color: transparent;
     box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+    &:hover {
+      background-color: $color-default-50;
+    }
   }
   &.small {
     font-size: 12px;
@@ -24,11 +32,16 @@
   }
   &.medium {
     font-size: 14px;
-    padding: 11px 20px;
+    padding: $padding-medium;
   }
   &.large {
     font-size: 16px;
     padding: 12px 24px;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: $color-primary-1200 0px 0px 0px 2px inset;
   }
   
 }

@@ -19,20 +19,3 @@ export const Select = ({name, label, options}) => {
     </div>
 }
 
-
-Select.propTypes = {
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    options: PropTypes.arrayOf(
-        PropTypes.shape({
-          value: PropTypes.string.isRequired,
-          label: PropTypes.string.isRequired
-        }).isRequired
-      ).isRequired,
-    onClick: PropTypes.func,
-  };
-  
-Select.defaultProps = {
-    onClick: undefined,
-};
-  
