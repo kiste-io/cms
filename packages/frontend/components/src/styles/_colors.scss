@@ -3,6 +3,7 @@
 $color-primary: #1ea7fd;
 $color-primary-1100: color.adjust($color-primary, $lightness: -10%);
 $color-primary-1200: color.adjust($color-primary, $lightness: -20%);
+$color-primary-500: color.adjust($color-primary, $alpha: -.5);
 $color-primary-30: color.adjust($color-primary, $alpha: -.97);
 
 
@@ -10,3 +11,13 @@ $color-default: #333;
 $color-default-500: #999;
 $color-default-100: #aaa;
 $color-default-50: #f1f1f1;
+
+
+$color-default-invert: #fff;
+
+$color-error: #ffcaca;
+$color-error-text: #894747;
+$color-success:  #caff98;
+$color-success-text: #5b8037;
+$color-info: #8dd3ff80;
+$color-info-text: #508aa7

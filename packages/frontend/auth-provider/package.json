@@ -5,15 +5,18 @@
   "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "lib/auth-provider.js",
+  "main": "lib/index.js",
   "directories": {
-    "lib": "lib",
-    "test": "__tests__"
+    "lib": "lib"
   },
   "files": [
     "lib"
   ],
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "build-lib": "webpack"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.18",
+    "webpack-cli": "^4.5.0"
   }
 }

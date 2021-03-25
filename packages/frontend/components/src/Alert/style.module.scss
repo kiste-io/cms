@@ -1,0 +1,31 @@
+@import 'variables';
+
+.Alert {
+
+    font-family: $font-family-text;
+    font-weight: 400;
+    font-size: 1rem;
+    padding: $padding-medium-medium;
+    border-radius: $radius-default;
+    
+    transition: opacity .3s;
+
+    &.hide {
+        opacity: 0;
+    }
+
+    &.error {
+        background-color: $color-error;
+        color: $color-error-text;
+    }
+    &.info {
+        background-color: $color-info;
+        color: $color-info-text;
+
+    }
+    &.success {
+        background-color: $color-success;
+        color: $color-success-text;
+
+    }
+}

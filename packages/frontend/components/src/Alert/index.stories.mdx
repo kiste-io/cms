@@ -1,0 +1,32 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import {useState} from 'react';
+import {Alert} from '.'
+import {Button} from '..'
+
+<Meta title="Components / Alert" />
+
+
+# Button
+<Canvas>
+    <Story name="error">
+        <Alert type="error" message='something went wrong name' />
+    </Story>
+    <Story name="error by duration">
+        {() => {
+            const [alert, toggleAlert] = useState(false)
+            return <div>
+                <Button label={alert ? `hide alert`: `show alert`} onClick={() => toggleAlert(!alert) }/>
+                {alert &&   <Alert type="error" message='something went wrong name for 3 sec' duration={3000} onClose={() => {
+                        const t = setTimeout(() => toggleAlert(false), 1000)
+                        return () => clearTimeout(t)
+                    }} />}
+            </div>
+        }}
+    </Story>
+    <Story name="success">
+        <Alert type="success" message='everything went fine!'  />
+    </Story>
+    <Story name="info">
+        <Alert message='info block, just to let you know it' />
+    </Story>
+</Canvas>

@@ -4,12 +4,14 @@
 
 .Input {
     position: relative;
+    display: flex;
 
     > input, > label {
         font-family: $font-family-text;
         font-weight: 500;
         font-size: 14px;
         padding: $padding-medium-medium;
+        width: 100%;
     }
 
     > input {       
@@ -20,22 +22,31 @@
         border:none;
         border-radius: 4px;
         line-height: 1.4;
+       
 
         &:focus, &.filled {
             + label {
                 font-size: .7rem;
                 top: -.9rem;
-                left: -1rem;
-                color: $color-default-100;
+                left: -.9rem;
+                color: $color-primary-500;
                 font-weight: 500;
+            }
+        }
+
+        &.filled {
+            &:not(:focus) {
+                + label {
+                    color: $color-default-100;             
+                }
 
             }
+            
         }
 
         &:hover {
             background-color: $color-primary-30;
             box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2px 1px;
-
         }
        
     }
@@ -44,9 +55,11 @@
         left: 0px;
         top: 0px;
         position: absolute;
-        transition: all 0.2s;
+        transition: all 0.15s;
+        width: fit-content;
 
         color: $color-default-500;
+        user-select: none;
 
     }
 }
