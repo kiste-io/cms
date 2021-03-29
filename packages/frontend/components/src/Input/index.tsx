@@ -39,8 +39,8 @@ Input.propTypes = {
 
   };
   
-  Input.defaultProps = {
+Input.defaultProps = {
     password: false,
     defaultValue: '',
     onChange: undefined,
-  };
+};

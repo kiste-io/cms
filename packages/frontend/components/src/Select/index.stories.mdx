@@ -7,10 +7,24 @@ import {Select} from '.'
 
 # Button
 <Canvas>
-    <Story name="default">
+    <Story name="initial">
         <Select 
-            label='Input Text' 
+            label='Select Number' 
             name='name' 
+            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]} 
+        />
+    </Story>
+</Canvas>
+
+
+
+# Button
+<Canvas>
+    <Story name="with default value">
+        <Select 
+            label='Select Number' 
+            name='name' 
+            defaultValue={'2'}
             options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]} 
         />
     </Story>

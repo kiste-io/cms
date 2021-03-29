@@ -1,3 +1,56 @@
+@import 'variables';
+
 .Select {
+
+    position: relative;
+
+
+    > label {
+        font-family: $font-family-text;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;        
+        color: $color-default-500;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    > svg {
+        right: $space-l;
+        top: calc(50% - 12px);
+        fill: currentColor;
+        width: 1em;
+        height: 1em;
+        font-size: 1.5rem;
+        position: absolute;
+
+    }
     
+    > select {
+        left: 0;
+        width: 100%;
+        bottom: 0;
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    &.toPortal {
+        @include form-box;
+    }
+}
+
+.SelectMenu {
+    position: absolute;
+
+    ul {
+        list-style: none;
+        width: 100%;      
+        li {
+            font-family: $font-family-text;
+            font-size: 14px;
+            font-weight: 500;
+            
+        }
+    }
 }

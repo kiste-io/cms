@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
 import style from './style.module.scss';
@@ -6,16 +7,96 @@ import style from './style.module.scss';
 const cx = classnames.bind(style)
 
 
-export const Select = ({name, label, options}) => {
+const Portal = ({children}) => {
 
-    const [id] = useState(() => `${name}_${Math.random().toString(36).slice(-5)}`)
+    const [portal, setPortal] = useState<HTMLDivElement>()
+
+    useEffect(() => {
+
+        const div = document.createElement("div")
+        div.setAttribute('id',  `portal_${Math.random().toString(36).slice(-5)}`)
+        document.body.appendChild(div)
+
+        setPortal(div)
+
+        return () => {
+            setPortal(undefined)
+            document.body.removeChild(div)
+        }
+
+    }, [])
+
+
+    return portal && ReactDOM.createPortal(children, portal) || null
+}
+
+
+const SelectMenu = ({select, options}) => {
+
+    const [ref, setRef] = useState(null)
+    
+    const {top, left, width} = select.rect || {top:0, left:0, width:0}
+
+    const clickListener = (e: MouseEvent) => {
+        console.log('ref.current', ref)
+        if(ref) {
+            console.log(ref.contains(e.target))
+        }
+        
+    }
+
+    useEffect(() => {
+        document.addEventListener('click', clickListener)
+        console.log('ref.current 2', ref)
+        return () => document.removeEventListener('click', clickListener);
+    }, [ref])
+
     
 
-    return <div className={cx('Select')}>
+
+    return select.isSelect ? <Portal>
+        <div ref={(ref) => {console.log('ref', ref); setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
+            options.map((o, i) => {
+                return <li key={i} onClick={() => console.log('clicked', o)}>{o.label}</li>
+            })
+        }</ul></div>
+    </Portal>
+    : null
+}
+
+export const Select = ({name, label, defaultValue, options}) => {
+
+    const [id] = useState(() => `${name}_${Math.random().toString(36).slice(-5)}`)
+    const [select, toggleSelect] = useState({isSelect:false, rect: undefined})
+    const ref = useRef()
+
+    const manageSelect = () => {
+        const rect = ref.current?.getBoundingClientRect()
+        !select.isSelect && toggleSelect({isSelect: true, rect})
+    }
+    
+
+    return <div className={cx('Select', 'toPortal', {selected: select.isSelect})} ref={ref} onClick={manageSelect}>
         <label htmlFor={id}>{label}</label>
-        <select name={name} id={id}>
+        <SelectMenu select={select} options={options} />
+        
+        <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
+        
+        <select aria-hidden tabIndex={-1} defaultValue={defaultValue} name={name} id={id}>
             {options.map((o, i) => <option key={i} value={o.value}>{o.label}</option>)}
         </select>
     </div>
 }
 
+
+Select.propTypes = {    
+    name: PropTypes.string.isRequired,
+    defaultValue: PropTypes.string,
+    label: PropTypes.string.isRequired,
+    onChange: PropTypes.func,
+};
+  
+Select.defaultProps = {
+    defaultValue: undefined,
+    onChange: undefined,
+};

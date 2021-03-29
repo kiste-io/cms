@@ -5,51 +5,15 @@
 .Input {
     position: relative;
     display: flex;
+  
 
     > input, > label {
         font-family: $font-family-text;
-        font-weight: 500;
         font-size: 14px;
-        padding: $padding-medium-medium;
-        width: 100%;
+        font-weight: 500;
+        width: 100%;        
     }
 
-    > input {       
-        color: $color-default;
-        outline-color: $color-primary;
-        background-color: transparent;
-        box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
-        border:none;
-        border-radius: 4px;
-        line-height: 1.4;
-       
-
-        &:focus, &.filled {
-            + label {
-                font-size: .7rem;
-                top: -.9rem;
-                left: -.9rem;
-                color: $color-primary-500;
-                font-weight: 500;
-            }
-        }
-
-        &.filled {
-            &:not(:focus) {
-                + label {
-                    color: $color-default-100;             
-                }
-
-            }
-            
-        }
-
-        &:hover {
-            background-color: $color-primary-30;
-            box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2px 1px;
-        }
-       
-    }
 
     > label {
         left: 0px;
@@ -62,4 +26,44 @@
         user-select: none;
 
     }
+
+    > input {       
+        color: $color-default;
+        outline-color: $color-primary;
+       
+        @include form-box;
+       
+
+        &:focus, &.filled {
+            + label {
+                font-size: .7rem;
+                top: 0.1rem;
+                left: 0.3rem;
+                color: $color-primary-500;
+                font-weight: 500;
+            }
+        }
+
+        &.filled {
+            &:not(:focus) {
+                + label {
+                    color: $color-default-100;             
+                }
+            }
+        }
+        &:not(.filled) {
+            &:not(:focus) {
+                + label {
+                    padding: $padding-large;
+                }
+            }
+        }
+
+        &:hover {
+            background-color: $color-primary-30;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2px 1px;
+        }
+       
+    }
+
 }
