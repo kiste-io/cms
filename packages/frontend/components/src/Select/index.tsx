@@ -35,49 +35,61 @@ const Portal = ({children}) => {
 const SelectMenu = () => {
 
     const [ref, setRef] = useState(null)
-    const [{options, rect, selected}, dispatch] = useSelectContext()
+    const [{options, rect, listed, value, defaultValue}, dispatch] = useSelectContext()
 
     
     const {top, left, width} = rect || {top:0, left:0, width:0}
 
     const clickListener = (e: MouseEvent) => {
-        console.log('ref.current', ref)
         if(ref && !ref.contains(e.target)) {
             dispatch({type: 'COLLAPSE'})
         }
-        
+        if(e.target.dataset.value) {
+            dispatch({type: 'SELECT', value: e.target.dataset.value})
+        }                
     }
 
     useEffect(() => {
         document.addEventListener('click', clickListener)
-        console.log('ref.current 2', ref)
         return () => document.removeEventListener('click', clickListener);
     }, [ref])
 
     
+    const currentValue = value || defaultValue
+    const sortedOptions = currentValue 
+    ? [options.find(o => o.value === currentValue), ...options.filter(o => o.value !== currentValue)]
+    : options
 
 
-    return selected ? <Portal>
+    return listed ? <Portal>
         <div ref={(ref) => {console.log('ref', ref); setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
-            options.map((o, i) => {
-                return <li key={i} onClick={() => console.log('clicked', o)}>{o.label}</li>
+            sortedOptions.map((o, i) => {
+                return <li key={i} className={cx({currentValue: currentValue === o.value})} data-value={o.value} onClick={() => console.log('clicked', o)}>{o.label}</li>
             })
         }</ul></div>
     </Portal>
     : null
 }
 
+const SelectValue = ({value, options}) => !value 
+    ? null 
+    : <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
+
+    
+
+
 const SelectNode = () => {
     const ref = useRef()
-    const [{selected, name, defaultValue, id, label, options}, dispatch] = useSelectContext()
+    const [{listed, name, defaultValue, value, id, label, options}, dispatch] = useSelectContext()
 
     const handlClick = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
         dispatch({type: 'LIST', payload: {rect}})
     }
 
-    return <div className={cx('Select', 'toPortal', {selected})} ref={ref} onClick={handlClick}>
+    return <div className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} ref={ref} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
+            {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
             
             <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>

@@ -4,6 +4,8 @@ $color-primary: #1ea7fd;
 $color-primary-1100: color.adjust($color-primary, $lightness: -10%);
 $color-primary-1200: color.adjust($color-primary, $lightness: -20%);
 $color-primary-500: color.adjust($color-primary, $alpha: -.5);
+$color-primary-150: color.adjust($color-primary, $alpha: -.85);
+$color-primary-100: color.adjust($color-primary, $alpha: -.9);
 $color-primary-30: color.adjust($color-primary, $alpha: -.97);
 
 

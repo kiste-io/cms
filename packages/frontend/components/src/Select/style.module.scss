@@ -5,15 +5,28 @@
     position: relative;
 
 
-    > label {
+
+    > label, > span {
         font-family: $font-family-text;
         font-size: 14px;
         font-weight: 500;
-        width: 100%;        
         color: $color-default-500;
         user-select: none;
         pointer-events: none;
+        transition: transform 0.15s;
     }
+
+    > label {
+        display: flex;
+    }
+
+    > span { 
+        color: $color-default;
+        position: absolute;
+        left: 20px;
+        top: 20px;
+    }
+
 
     > svg {
         right: $space-l;
@@ -36,21 +49,85 @@
     }
 
     &.toPortal {
-        @include form-box;
+        
+        @include form-box;        
+
+
+        &:hover {
+            background: $color-primary-30;
+            cursor: pointer;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 2px 1px;
+        }
+
+        
+    }
+
+    &.listed {
+
+        label {
+            transform: translate(-1rem, -1.3rem);
+            font-size: .7rem;
+            color: $color-primary-500;            
+
+        }
+
+        &.toPortal {
+        
+            box-shadow: none;    
+            
+        }
+    
+
+    }
+
+    &.value {
+       
+        label {
+            transform: translate(-1rem, -1.3rem);
+            font-size: 11px;
+            color:$color-default-500;         
+
+        }
+
+        &.listed {
+
+            label {
+                color: $color-primary-500;            
+            }
+        }
+            
     }
 }
 
 .SelectMenu {
     position: absolute;
-
+    transition: all .5s;
+    box-shadow:  $color-primary 0px 0px 0px 2px inset;
+    border:none;
+    border-radius: 4px;
     ul {
         list-style: none;
-        width: 100%;      
+        
+        
         li {
+            
+            padding: 20px 20px;
             font-family: $font-family-text;
             font-size: 14px;
             font-weight: 500;
-            
+            cursor: pointer;
+            line-height: 1.3rem;
+            padding-left: 20px;
+            transition: all .1s ease-in;
+
+            &:hover {
+                background:  $color-primary-150;
+            }
+
+            &.currentValue {
+                color: $color-primary;
+                background:  $color-primary-100;
+            }
         }
     }
 }

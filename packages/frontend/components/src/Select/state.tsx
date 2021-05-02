@@ -15,10 +15,11 @@ interface Rect {
 interface SelectConextsState {
     id?: string,
     name?: string,
-    selected?: boolean,
+    listed?: boolean,
     label?: string,
     options?: Option[],
     defaultValue?: string,
+    value?: string,
     rect?: Rect
     
 }
@@ -30,9 +31,11 @@ export const useSelectContext = () => useContext(SelectContext)
 const selectReducer = (state, action) => {
     switch(action.type) {
         case 'LIST':
-            return {...state, selected: true, rect: action.payload.rect, }
+            return {...state, listed: true, rect: action.payload.rect, }
         case 'COLLAPSE':
-            return {...state, selected: false}
+            return {...state, listed: false}
+        case 'SELECT':
+            return {...state, listed: false, value: action.value}
         default:
             return state
     }
@@ -42,7 +45,7 @@ const selectReducer = (state, action) => {
 const init = ({name, ...rest}) => ({
     id: `${name}_${Math.random().toString(36).slice(-5)}`, 
     ...rest,     
-    selected: false})
+    listed: false})
 
 export default ({children, ...props}) => {
 
