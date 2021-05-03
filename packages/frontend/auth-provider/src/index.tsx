@@ -18,6 +18,23 @@ export const fetchLogin = (TOKEN_ENDPOINT, {username, password}) => new Promise(
 })
 
 
+export const fetchRefreshToken = (TOKEN_ENDPOINT, refresh_token) => new Promise(async (resolve, reject) => {
+ 
+  const response = await fetch(TOKEN_ENDPOINT, {
+      method: `POST`,
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `refresh_token=${refresh_token}&grant_type=refresh_token&client_id=app`
+  })
+
+  response.status === 200 
+      ? resolve(await response.json())
+      : reject(await response.json())
+
+})
+
+
 const authContext = createContext();
 
 const authFlag = {
