@@ -65,7 +65,6 @@ module.exports = {
     },
     externals: {
       'react': 'react',
-      'react-dom': 'react-dom',
-      'classnames/bind': 'classnames'
+      'react-dom': 'react-dom'
     }
   }

@@ -12,7 +12,7 @@ export const Input = ({name, label, defaultValue, password, onChange, ...props})
     const [filled, setFilled] = useState(defaultValue.length>0) 
     
     
-    return <div className={cx('Input')}>
+    return <div className={cx("Input")}>
         <input 
             type={password && 'password' || 'text'} 
             defaultValue={defaultValue} 
