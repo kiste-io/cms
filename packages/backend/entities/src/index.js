@@ -38,7 +38,40 @@ const formatEntitesResponse = ({images, ...rest}) => {
     }
 }
 
+const config = {
+    metadata: {}
+}
+const entitiesConfig = (metaData) => config.metadata = metaData
+
+
+
 const entitiesRepo = (conn) => {
+
+     // entity collections
+     router.get("/entities", async (req, res) => {
+   
+        console.log('config.metadata', config.metadata)
+        const collections = config.metadata.collections.map(c => c.name)
+        console.log('collections', collections)
+        res.send(collections)        
+        
+    })
+
+
+
+     // entity categories
+     router.get("/entities/:collection/categories", async (req, res) => {
+        const {collection} = req.params
+
+        findEntityCategories(conn)(collection).then(result => {
+            res.send(result)
+        }).catch(() => {
+            res.status(500)
+            res.send()
+        })
+        
+        
+    })
 
      // entity categories
      router.get("/entities/:collection/categories", async (req, res) => {
@@ -224,6 +257,7 @@ const publicImagesRepo = (connection) => {
 }
 
 module.exports = {
+    entitiesConfig,
     entitiesRepo,
     publicImagesRepo
 }
