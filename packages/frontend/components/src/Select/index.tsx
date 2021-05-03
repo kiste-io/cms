@@ -44,8 +44,8 @@ const SelectMenu = () => {
         if(ref && !ref.contains(e.target)) {
             dispatch({type: 'COLLAPSE'})
         }
-        if(e.target.dataset.value) {
-            dispatch({type: 'SELECT', value: e.target.dataset.value})
+        if((e.target as HTMLElement).dataset.value) {
+            dispatch({type: 'SELECT', value: (e.target as HTMLElement).dataset.value})
         }                
     }
 
@@ -62,7 +62,7 @@ const SelectMenu = () => {
 
 
     return listed ? <Portal>
-        <div ref={(ref) => {console.log('ref', ref); setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
+        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
             sortedOptions.map((o, i) => {
                 return <li key={i} className={cx({currentValue: currentValue === o.value})} data-value={o.value} onClick={() => console.log('clicked', o)}>{o.label}</li>
             })

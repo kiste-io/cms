@@ -64,6 +64,8 @@ module.exports = {
       path: path.resolve(__dirname, 'lib')
     },
     externals: {
-      'react': 'react'
+      'react': 'react',
+      'react-dom': 'react-dom',
+      'classnames/bind': 'classnames'
     }
   }
