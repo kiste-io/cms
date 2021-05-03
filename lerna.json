@@ -1,6 +1,5 @@
 {
   "packages": [
-    "cms/*",
     "packages/frontend/*",
     "packages/backend/*"
   ],
