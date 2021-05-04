@@ -39,9 +39,9 @@ const formatEntitesResponse = ({images, ...rest}) => {
 }
 
 const config = {
-    metadata: {}
+    collections: {}
 }
-const entitiesConfig = (metaData) => config.metadata = metaData
+const entitiesCollectionConfig = (collections) => config.collections = collections
 
 
 
@@ -50,8 +50,7 @@ const entitiesRepo = (conn) => {
      // entity collections
      router.get("/entities", async (req, res) => {
    
-        console.log('config.metadata', config.metadata)
-        const collections = config.metadata.collections.map(c => c.name)
+        const collections = config.collections
         console.log('collections', collections)
         res.send(collections)        
         
@@ -257,7 +256,7 @@ const publicImagesRepo = (connection) => {
 }
 
 module.exports = {
-    entitiesConfig,
+    entitiesCollectionConfig,
     entitiesRepo,
     publicImagesRepo
 }

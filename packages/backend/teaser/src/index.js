@@ -31,11 +31,8 @@ const teasersRepo = (conn) => {
 
     router.get("/teasers", async (req, res) => {
 
-        findTeasers(conn).then((teasers) => {
-
-            res.send(teasers)
-        })
-        
+        const collections = config.collections
+        res.send(collections)        
     })
 
 
