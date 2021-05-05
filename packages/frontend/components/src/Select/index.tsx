@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useReducer} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
@@ -46,7 +46,7 @@ const SelectMenu = () => {
         }
         if((e.target as HTMLElement).dataset.value) {
             dispatch({type: 'SELECT', value: (e.target as HTMLElement).dataset.value})
-        }                
+        }
     }
 
     useEffect(() => {
@@ -59,7 +59,6 @@ const SelectMenu = () => {
     const sortedOptions = currentValue 
     ? [options.find(o => o.value === currentValue), ...options.filter(o => o.value !== currentValue)]
     : options
-
 
     return listed ? <Portal>
         <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{

@@ -1,6 +1,6 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import {Select} from '.'
-
+import {useState, useEffect} from 'react'
 
 <Meta title="Components / Select" />
 
@@ -21,11 +21,13 @@ import {Select} from '.'
 # Button
 <Canvas>
     <Story name="with default value">
-        <Select 
+        {() => {
+        const [state, set] = useState({defaultValue: '1', options: []})
+        useEffect(() => set({defaultValue: '2', options: [{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}), [])
+        return <Select 
             label='Select Number' 
             name='name' 
-            defaultValue={'2'}
-            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]} 
-        />
+            defaultValue={state.defaultValue}
+            options={state.options}/>}}        
     </Story>
 </Canvas>

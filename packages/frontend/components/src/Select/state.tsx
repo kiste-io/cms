@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useState } from 'react';
+import React, { useContext, useReducer, useEffect } from 'react';
 
 
 interface Option {
@@ -36,8 +36,11 @@ const selectReducer = (state, action) => {
             return {...state, listed: false}
         case 'SELECT':
             return {...state, listed: false, value: action.value}
-        default:
-            return state
+
+        case 'REOPTION':
+                return {...state, options: action.options, defaultValue: action.defaultValue, value: action.value}
+            default:
+                return state
     }
 }
 
@@ -47,11 +50,13 @@ const init = ({name, ...rest}) => ({
     ...rest,     
     listed: false})
 
-export default ({children, ...props}) => {
+export default ({children, name, ...props}) => {
 
     const [state, dispatch] = useReducer(selectReducer, {...props}, init)
 
-    console.log('state', state, props)
+    const {defaultValue, value, options} = props
+
+    useEffect(() => dispatch({type: 'REOPTION', defaultValue, value, options}), [defaultValue, value, options])
 
     return <SelectContext.Provider value={[state, dispatch]}>
         {children}
