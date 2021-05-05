@@ -83,7 +83,7 @@ const teasersRepo = (conn) => {
                 const file_uuids = Object.keys(files)
                 
                 Promise.all(file_uuids.map((file_uuid) => {
-                    return uploadThumb(teaser_uuid, file_uuid, files[file_uuid])
+                    return uploadThumb(collection, teaser_uuid, file_uuid, files[file_uuid])
                 })).catch((err) => {
                         console.error(err)
                         res.status(err.status ? err.status : 500)
