@@ -20,7 +20,8 @@ interface SelectConextsState {
     options?: Option[],
     defaultValue?: string,
     value?: string,
-    rect?: Rect
+    rect?: Rect,
+    onChange?: (value: string) => void
     
 }
 

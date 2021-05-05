@@ -78,6 +78,10 @@
         }
     
 
+        svg {
+            transform: rotate(180deg);
+        }
+
     }
 
     &.value {
@@ -90,10 +94,12 @@
         }
 
         &.listed {
+            transition: transform .15s;
 
             label {
                 color: $color-primary-500;            
             }
+
         }
             
     }

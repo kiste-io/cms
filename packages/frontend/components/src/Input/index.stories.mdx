@@ -1,5 +1,6 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
 import {Input} from '.'
+import {useState, useEffect} from 'react'
 
 
 <Meta title="Components / Input" />
@@ -10,7 +11,14 @@ import {Input} from '.'
     <Story name="initial">
         <Input label='Input Text' name='name' />
     </Story>
-     <Story name="with default value">
-        <Input label='Input Text' name='name' defaultValue='some value' />
+     <Story name="with default value">{() => {
+        const [state, set] = useState({defaultValue: 'no value'})
+        const [value, setValue] = useState(null)
+        useEffect(() => set({defaultValue: 'some value'}), [])
+        
+        return <>
+        <div style={{margin: '20px 0px'}}>Inputed Value: {value}</div>
+        <Input label='Input Text' name='name' onChange={(value) => setValue(value)} defaultValue={state.defaultValue} />
+        </>}}     
     </Story>
 </Canvas>

@@ -63,7 +63,7 @@ const SelectMenu = () => {
     return listed ? <Portal>
         <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
             sortedOptions.map((o, i) => {
-                return <li key={i} className={cx({currentValue: currentValue === o.value})} data-value={o.value} onClick={() => console.log('clicked', o)}>{o.label}</li>
+                return <li key={i} className={cx({currentValue: currentValue === o.value})} data-value={o.value}>{o.label}</li>
             })
         }</ul></div>
     </Portal>
@@ -79,13 +79,16 @@ const SelectValue = ({value, options}) => !value
 
 const SelectNode = () => {
     const ref = useRef()
-    const [{listed, name, defaultValue, value, id, label, options}, dispatch] = useSelectContext()
+    const [{listed, name, defaultValue, value, id, label, options, onChange}, dispatch] = useSelectContext()
 
     const handlClick = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
         dispatch({type: 'LIST', payload: {rect}})
     }
 
+    useEffect(() => {
+        onChange && onChange(value)
+    }, [value])
     return <div className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} ref={ref} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
 import style from './style.module.scss';
@@ -6,21 +6,27 @@ import style from './style.module.scss';
 const cx = classnames.bind(style)
 
 
-export const Input = ({name, label, defaultValue, password, onChange, ...props}) => {
+export const Input = ({name, label, defaultValue, value, password, onChange, ...props}) => {
 
     const [id] = useState(() => `${name}_${Math.random().toString(36).slice(-5)}`)
     const [filled, setFilled] = useState(defaultValue.length>0) 
-    
+    const [inputValue, setValue] = useState(value || defaultValue)
+        
+    useEffect(() => setValue(defaultValue), [defaultValue])
     
     return <div className={cx("Input")}>
         <input 
             type={password && 'password' || 'text'} 
-            defaultValue={defaultValue} 
             name={name} 
             id={id} 
+            defaultValue={defaultValue}
+            value={inputValue}
             onChange={(e) => {
                 setFilled(e.target.value.length>0)
-                onChange && onChange(e)
+                if(onChange) {
+                    setValue(e.target.value)
+                    onChange(e.target.value) 
+                }
             }} 
             className={cx({filled})} 
             {...props}
