@@ -152,10 +152,10 @@ const entitiesRepo = (conn) => {
     
         const {collection, entity_uuid} = req.params;
 
-        const {title, category_uuid} = req.body
+        const {title, category_uuid, textBlocks} = req.body
 
         updateEntityData(conn, collection)
-        (entity_uuid, {title, category_uuid})
+        (entity_uuid, {title, category_uuid, textBlocks})
             .then(result => {
                 res.send(result)
             })
@@ -238,7 +238,6 @@ const publicImagesRepo = (connection) => {
 
         const {collection, entity_uuid, file_uuid, format} = req.params
         const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format)
-        console.log('path', path)
         fs.exists(path, (exists) => {
             if(!exists) {
                 res.status(404)

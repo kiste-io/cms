@@ -9,11 +9,15 @@ const cx = classnames.bind(style)
 export const Input = ({name, label, defaultValue, value, password, onChange, ...props}) => {
 
     const [id] = useState(() => `${name}_${Math.random().toString(36).slice(-5)}`)
-    const [filled, setFilled] = useState(defaultValue.length>0) 
+    const [filled, setFilled] = useState(defaultValue && defaultValue.length>0) 
     const [inputValue, setValue] = useState(value || defaultValue)
         
-    useEffect(() => setValue(defaultValue), [defaultValue])
+    useEffect(() => {
+        setValue(defaultValue)
+        setFilled(defaultValue && defaultValue.length>0)
+    }, [defaultValue])
     
+    console.log('')
     return <div className={cx("Input")}>
         <input 
             type={password && 'password' || 'text'} 
@@ -23,8 +27,8 @@ export const Input = ({name, label, defaultValue, value, password, onChange, ...
             value={inputValue}
             onChange={(e) => {
                 setFilled(e.target.value.length>0)
+                setValue(e.target.value)
                 if(onChange) {
-                    setValue(e.target.value)
                     onChange(e.target.value) 
                 }
             }} 

@@ -35,7 +35,7 @@ const Portal = ({children}) => {
 const SelectMenu = () => {
 
     const [ref, setRef] = useState(null)
-    const [{options, rect, listed, value, defaultValue}, dispatch] = useSelectContext()
+    const [{options, rect, listed, value, defaultValue, onChange}, dispatch] = useSelectContext()
 
     
     const {top, left, width} = rect || {top:0, left:0, width:0}
@@ -45,7 +45,9 @@ const SelectMenu = () => {
             dispatch({type: 'COLLAPSE'})
         }
         if((e.target as HTMLElement).dataset.value) {
-            dispatch({type: 'SELECT', value: (e.target as HTMLElement).dataset.value})
+            const datasetValue = (e.target as HTMLElement).dataset.value
+            dispatch({type: 'SELECT', value: datasetValue})
+            onChange && onChange(datasetValue)
         }
     }
 
@@ -86,9 +88,6 @@ const SelectNode = () => {
         dispatch({type: 'LIST', payload: {rect}})
     }
 
-    useEffect(() => {
-        onChange && onChange(value)
-    }, [value])
     return <div className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} ref={ref} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}

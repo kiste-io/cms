@@ -12,7 +12,7 @@ import {useState, useEffect} from 'react'
         <Input label='Input Text' name='name' />
     </Story>
      <Story name="with default value">{() => {
-        const [state, set] = useState({defaultValue: 'no value'})
+        const [state, set] = useState({defaultValue: null})
         const [value, setValue] = useState(null)
         useEffect(() => set({defaultValue: 'some value'}), [])
         

@@ -10,19 +10,15 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary, backgroundColor, size, label, ...props }) => {
+export const Button = ({ primary, backgroundColor, size, label, as, ...props }) => {
   const mode = primary ? 'primary' : 'default';
-  return (
-    <button
-      type="button"
-      className={cx('Button', size, mode)}
-      style={backgroundColor && { backgroundColor }}
-      {...props}
-    >
-      {label}
-    </button>
-  );
-};
+  
+  return React.createElement(as, {
+    className: cx('Button', size, mode),
+    style: backgroundColor && { backgroundColor },
+    ...props},
+    label)
+  }
 
 Button.propTypes = {
   /**
@@ -41,10 +37,13 @@ Button.propTypes = {
    * Optional click handler
    */
   onClick: PropTypes.func,
+
+  as: PropTypes.string
 };
 
 Button.defaultProps = {
   primary: false,
   size: 'medium',
   onClick: undefined,
+  as: 'button'
 };
