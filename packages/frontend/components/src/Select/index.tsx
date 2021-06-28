@@ -81,22 +81,23 @@ const SelectValue = ({value, options}) => !value
 
 const SelectNode = () => {
     const ref = useRef()
-    const [{listed, name, defaultValue, value, id, label, options, onChange}, dispatch] = useSelectContext()
+    const [{listed, name, defaultValue, value, id, label, options}, dispatch] = useSelectContext()
 
     const handlClick = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
         dispatch({type: 'LIST', payload: {rect}})
     }
 
-    return <div className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} ref={ref} onClick={handlClick}>
+
+    return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
             
             <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
             
-            <select aria-hidden tabIndex={-1} defaultValue={defaultValue} name={name} id={id}>
-                {options.map((o, i) => <option key={i} value={o.value}>{o.label}</option>)}
+            <select name={name} id={id}>
+                {options.map((o, i) =><option key={i} value={o.value}>{o.label}</option>)}
             </select>
         </div>
 

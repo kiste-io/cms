@@ -17,7 +17,6 @@ export const Input = ({name, label, defaultValue, value, password, onChange, ...
         setFilled(defaultValue && defaultValue.length>0)
     }, [defaultValue])
     
-    console.log('')
     return <div className={cx("Input")}>
         <input 
             type={password && 'password' || 'text'} 

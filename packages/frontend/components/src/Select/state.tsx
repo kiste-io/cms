@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useEffect } from 'react';
+import React, { useContext, useReducer, useEffect, useRef } from 'react';
 
 
 interface Option {
@@ -30,7 +30,6 @@ const SelectContext: React.Context<[SelectConextsState, React.Dispatch<any>]> = 
 export const useSelectContext = () => useContext(SelectContext)
 
 const selectReducer = (state, action) => {
-    console.log('select', action.type, state)
     switch(action.type) {
         case 'LIST':
             return {...state, listed: true, rect: action.payload.rect, }
@@ -38,14 +37,29 @@ const selectReducer = (state, action) => {
             return {...state, listed: false}
         case 'SELECT':
             return {...state, listed: false, value: action.value}
-
         case 'REOPTION':
-                return {...state, options: action.options, defaultValue: action.defaultValue}
-            default:
-                return state
+            return {...state, options: action.options, defaultValue: action.defaultValue}
+        default:
+            return state
     }
 }
 
+/**
+ * native html support
+ */
+const selectActionListener = (ref, action) => {
+
+    if(!ref.current) return
+
+    const select = (ref.current as HTMLBaseElement).querySelector('select')
+    switch(action.type) {
+        case 'SELECT':
+            select.value = action.value;
+            select.dispatchEvent(new Event('change'));                
+        break
+        
+    }
+}
 
 const init = ({name, ...rest}) => ({
     id: `${name}_${Math.random().toString(36).slice(-5)}`, 
@@ -62,19 +76,27 @@ const optionsNotEqual = (options1, options2) => {
 
 export default ({children, name, ...props}) => {
 
-    const [state, dispatch] = useReducer(selectReducer, {...props}, init)
+    const ref = useRef()
+    const [state, dispatch] = useReducer((state, action) => {
+        selectActionListener(ref, action)
+        return selectReducer(state, action)
+    }, {...props}, init)
+
+    
 
     const {defaultValue, options} = props
 
     useEffect(() => {
-        console.log(' optionsNotEqual', optionsNotEqual(options,state.options ), options,state.options)
         if(defaultValue !== state.defaultValue || optionsNotEqual(options,state.options )){
             dispatch({type: 'REOPTION', defaultValue, options})
         }
         
     }, [defaultValue, options])
 
+    
     return <SelectContext.Provider value={[state, dispatch]}>
-        {children}
+        <div ref={ref}>
+            {children}
+        </div>
     </SelectContext.Provider>
 }
