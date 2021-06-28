@@ -30,6 +30,7 @@ const SelectContext: React.Context<[SelectConextsState, React.Dispatch<any>]> = 
 export const useSelectContext = () => useContext(SelectContext)
 
 const selectReducer = (state, action) => {
+    
     switch(action.type) {
         case 'LIST':
             return {...state, listed: true, rect: action.payload.rect, }
@@ -44,25 +45,10 @@ const selectReducer = (state, action) => {
     }
 }
 
-/**
- * native html support
- */
-const selectActionListener = (ref, action) => {
-
-    if(!ref.current) return
-
-    const select = (ref.current as HTMLBaseElement).querySelector('select')
-    switch(action.type) {
-        case 'SELECT':
-            select.value = action.value;
-            select.dispatchEvent(new Event('change'));                
-        break
-        
-    }
-}
 
 const init = ({name, ...rest}) => ({
     id: `${name}_${Math.random().toString(36).slice(-5)}`, 
+    name,
     ...rest,     
     listed: false})
 
@@ -74,15 +60,10 @@ const optionsNotEqual = (options1, options2) => {
     return options1Values.filter(v => !options2Values.includes(v)).length > 0 || options2Values.filter(v => !options1Values.includes(v)).length > 0
 }
 
-export default ({children, name, ...props}) => {
+export default ({children, ...props}) => {
 
     const ref = useRef()
-    const [state, dispatch] = useReducer((state, action) => {
-        selectActionListener(ref, action)
-        return selectReducer(state, action)
-    }, {...props}, init)
-
-    
+    const [state, dispatch] = useReducer(selectReducer, {...props, ref}, init)
 
     const {defaultValue, options} = props
 
@@ -92,6 +73,16 @@ export default ({children, name, ...props}) => {
         }
         
     }, [defaultValue, options])
+    
+    /** native html support for onChange Event */    
+    useEffect(() => {
+        if(!state.ref.current) return
+
+        const select = (state.ref.current as HTMLBaseElement).querySelector('select')
+        select.value = state.value;
+        select.dispatchEvent(new Event('change'));           
+
+    }, [state.value])
 
     
     return <SelectContext.Provider value={[state, dispatch]}>

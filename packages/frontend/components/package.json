@@ -13,7 +13,8 @@
     "test": "echo \"Error: run tests from root\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build-lib": "webpack"
+    "build:dev": "webpack --watch",
+    "build": "webpack"
   },
   "peerDependencies": {
     "react": "^17.0.2",

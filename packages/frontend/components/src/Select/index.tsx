@@ -87,8 +87,7 @@ const SelectNode = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
         dispatch({type: 'LIST', payload: {rect}})
     }
-
-
+    
     return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}

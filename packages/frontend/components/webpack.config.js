@@ -7,7 +7,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 module.exports = {
     entry: './src/index.ts',
-    mode: 'production',
+    mode: isDevelopment ? 'development': 'production',
     module: {
         rules: [
           {

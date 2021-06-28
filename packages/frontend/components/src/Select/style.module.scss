@@ -105,7 +105,7 @@
 }
 
 .SelectMenu {
-    position: absolute;
+    position: fixed;
     transition: all .5s;
     box-shadow:  $color-primary 0px 0px 0px 2px inset;
     border:none;
