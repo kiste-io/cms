@@ -3,18 +3,21 @@ import React, { useContext, createContext, useState } from 'react';
 
 export const fetchLogin = (TOKEN_ENDPOINT, {username, password}) => new Promise(async (resolve, reject) => {
  
-    const response = await fetch(TOKEN_ENDPOINT, {
-        method: `POST`,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `username=${username}&password=${password}&grant_type=password&client_id=app`
-    })
-
-    response.status === 200 
+    try {
+      const response = await fetch(TOKEN_ENDPOINT, {
+          method: `POST`,
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `username=${username}&password=${password}&grant_type=password&client_id=app`
+      })
+      response.status === 200 
         ? resolve(await response.json())
         : reject(await response.json())
-
+    } catch (e) {
+      reject(e)
+    }
+    
 })
 
 
