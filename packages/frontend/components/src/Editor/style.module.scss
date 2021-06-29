@@ -1,0 +1,25 @@
+@import 'variables';
+
+
+.Editor {
+    padding: .3rem;
+    border: 1px solid $color-primary;
+
+    > div {
+        min-height: 5rem;
+        max-height: 8rem;
+        overflow-y: scroll;
+
+        &:focus-visible {
+            outline: none;
+        }
+    }
+
+    > textarea:not(.debug) {
+        position: absolute;
+        width: 0px;
+        height: 0px;
+        border: none;
+        
+    }
+}

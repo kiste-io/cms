@@ -87,7 +87,7 @@ const SelectNode = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
         dispatch({type: 'LIST', payload: {rect}})
     }
-    
+
     return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
@@ -95,7 +95,7 @@ const SelectNode = () => {
             
             <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
             
-            <select name={name} id={id}>
+            <select name={name} value={value || defaultValue} id={id}>
                 {options.map((o, i) =><option key={i} value={o.value}>{o.label}</option>)}
             </select>
         </div>
