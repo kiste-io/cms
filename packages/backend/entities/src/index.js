@@ -21,7 +21,9 @@ const {
 } = require('./db')
 
 const {
-    uploadImagesCommand
+    uploadImagesCommand,
+    uploadImagesCommand2
+
 } = require('./upload')
 
 
@@ -152,18 +154,68 @@ const entitiesRepo = (conn) => {
     
         const {collection, entity_uuid} = req.params;
 
-        const {title, category_uuid, textBlocks} = req.body
+        new formidable.IncomingForm().parse(req, async (err, fields, files)  => {
 
-        updateEntityData(conn, collection)
-        (entity_uuid, {title, category_uuid, textBlocks})
-            .then(result => {
-                res.send(result)
+
+            console.log('/entities/:collection/:entity_uuid', {collection, entity_uuid, err, fields, files})
+            const reg1 = /(?<parent_node>[^\[]*)/
+            const reg2 = /\[(?<parent_uuid>.*?)\]\[(?<node>.*?)\]/
+            const reg3 = /\[(?<parent_uuid>.*?)\]\[(?<node>.*?)\]\[(?<node_uuid>.*?)\]/
+
+            const parsedFields = Object.keys(fields).map(key => {
+                const [head, tail] = [reg1.exec(key), reg2.exec(key)]
+
+                if(!tail) {
+                    return {[key]: fields[key]}
+                }
+
+                const {parent_node} = head.groups
+                const {parent_uuid, node} = tail.groups
+
+                return {value: fields[key], meta: {parent_node, parent_uuid, node}}
+                
             })
-            .catch(err => {
-                console.error(err)
-                res.status(500)
-                res.send(err)
+
+            const fieldsObj = parsedFields.reduce((acc, elem) => {
+                if (!elem.value) return {...acc, ...elem}
+                else {
+                    const {parent_node, parent_uuid, node} = elem.meta
+
+                    if (acc[parent_node]) {
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {  [node]: elem.value}}}
+                    }
+
+                    if (acc[parent_node] && acc[parent_node][parent_uuid]) {
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {...acc[parent_node][parent_uuid],  [node]: elem.value}}}
+                    }
+
+                    return {...acc, [parent_node]: {  [parent_uuid] : {  [node]: elem.value}}}
+                }
             })
+
+       
+
+            const filesData = Object.keys(files).map(key => {
+                const [head, tail] = [reg1.exec(key), reg3.exec(key)]
+
+                if(!tail) {
+                    return {[key]: fields[key]}
+                }
+
+                const {parent_node} = head.groups
+                const {parent_uuid, node_uuid} = tail.groups
+
+                return {file:files[key], meta: {parent_node, parent_uuid, file_uuid: node_uuid, collection, entity_uuid } }
+            })
+                
+            console.log('fieldsObj', fieldsObj)
+            const images = await uploadImagesCommand2(filesData)
+            console.log('images', images)
+
+            
+        })
+
+    
         
     })
     
@@ -171,7 +223,7 @@ const entitiesRepo = (conn) => {
     
         const {collection, entity_uuid} = req.params
 
-        new formidable.IncomingForm().parse(req, function(err, fields, files) {
+        formidable({ multiples: true }).parse(req, function(err, fields, files) {
     
             const {images} = fields
             
@@ -238,6 +290,7 @@ const publicImagesRepo = (connection) => {
 
         const {collection, entity_uuid, file_uuid, format} = req.params
         const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format)
+        console.log('path', path)
         fs.exists(path, (exists) => {
             if(!exists) {
                 res.status(404)

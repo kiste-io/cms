@@ -1,5 +1,5 @@
 const {Observable, from, of, Subject, zip} = require('rxjs')
-const {map, tap, takeUntil, mergeMap, reduce} = require('rxjs/operators')
+const {map, tap, takeUntil, mergeMap, reduce, scan} = require('rxjs/operators')
 const fs = require('fs')
 const sharp = require('sharp')
 const uuid4 = require('uuid4')
@@ -75,6 +75,22 @@ const urifyImages = (collection, entity_uuid, images) => {
     
 }
 
+
+const urifyImages2 = (meta, pathes) => {
+
+
+    const {collection, entity_uuid, file_uuid, ...rest} = meta
+ 
+    // /entities/:collection/:entity_uuid/images/:file_uuid/:format
+    const uris = Object.keys(pathes).reduce((acc, key) => 
+        ({...acc, [key]: `${process.env.BACKED_SERVICE_URL}/entities/${collection}/${entity_uuid}/images/${file_uuid}/${key}`}), {})
+
+
+    return {file_uuid, pathes, uris, ...rest }
+
+    
+}
+
 const uploadImagesCommand = (collection, uuid, fields, files) => of(true)
 .pipe(        
     /** resize and store locally images */
@@ -108,10 +124,20 @@ const uploadImagesCommand = (collection, uuid, fields, files) => of(true)
 
 
 
+const uploadImagesCommand2 = (filesData) => from(filesData)
+.pipe(        
+    /** resize and store locally images */
+    mergeMap(filedata =>  zip(of(filedata), from(ensureDir(`/tmp/${filedata.meta.parent_uuid}`)))),
+    mergeMap(([filedata, dir]) => zip(of(filedata), from(resize(dir, filedata.file)))),
+    map(([filedata, pathes]) => urifyImages2(filedata.meta, pathes)),
+    scan((acc, value) => [...acc, value], [])
+
+).toPromise()
 
 
 module.exports =  {
     uploadImagesCommand, 
+    uploadImagesCommand2,
     
     digitalOceanUpload: (images) => of(images)
             .pipe(
