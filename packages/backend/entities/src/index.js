@@ -13,6 +13,7 @@ const {
     deleteEntity,
     storeEntityImages,
     findEntityImage,
+    findEntityContentImage,
     reorderEntityImage,
     deleteEntityImage,
     storeEntityCategory,
@@ -34,10 +35,20 @@ function sleep(ms) {
   }
 
 
-const formatEntitesResponse = ({images, ...rest}) => {
-    return {...rest, 
-        images: images && images.map(({file_uuid, uris, order}) =>({file_uuid, order, uri: uris['200x200']}) || [])
+const formatEntitesResponse = ({images, content, ...rest}) => {
+    const responseData = {...rest, 
+        images: images && images.map(({file_uuid, uris, order}) =>({file_uuid, order, uri: uris['200x200']}) || []),
+        content: content && Object.keys(content).map && Object.keys(content).map(key => ({
+            content_uuid: key, 
+            ...content[key], 
+            images: content[key].images && content[key].images.map(i => ({uris: i.uris, node_uuid: i.node_uuid}))
+        }))
+        
     }
+
+    console.log('responseData', responseData)
+
+    return responseData
 }
 
 const config = {
@@ -159,59 +170,91 @@ const entitiesRepo = (conn) => {
 
             console.log('/entities/:collection/:entity_uuid', {collection, entity_uuid, err, fields, files})
             const reg1 = /(?<parent_node>[^\[]*)/
-            const reg2 = /\[(?<parent_uuid>.*?)\]\[(?<node>.*?)\]/
-            const reg3 = /\[(?<parent_uuid>.*?)\]\[(?<node>.*?)\]\[(?<node_uuid>.*?)\]/
+            const reg2 = /\[(.*?)\]/g
 
             const parsedFields = Object.keys(fields).map(key => {
-                const [head, tail] = [reg1.exec(key), reg2.exec(key)]
+                const [head, reg2tail]  = [reg1.exec(key), reg2.exec(key)]
 
-                if(!tail) {
+                if(!reg2tail) {
                     return {[key]: fields[key]}
                 }
 
-                const {parent_node} = head.groups
-                const {parent_uuid, node} = tail.groups
+                let tail = [reg2tail[1]]
 
-                return {value: fields[key], meta: {parent_node, parent_uuid, node}}
+                for (let match; (match = reg2.exec(key)) !== null;)  {
+                    tail = [...tail, match[1]]
+                }
+                  
+
+                const {parent_node} = head.groups
+                const [parent_uuid, node, node_uuid] = tail 
+                
+
+                return {value: fields[key], meta: {parent_node, parent_uuid, node, node_uuid}}
+
                 
             })
 
-            const fieldsObj = parsedFields.reduce((acc, elem) => {
+            const payload = parsedFields.reduce((acc, elem) => {
                 if (!elem.value) return {...acc, ...elem}
                 else {
-                    const {parent_node, parent_uuid, node} = elem.meta
+                    const {parent_node, parent_uuid, node, node_uuid} = elem.meta
 
-                    if (acc[parent_node]) {
-                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {  [node]: elem.value}}}
-                    }
-
+                    const value = elem.value
+                    
                     if (acc[parent_node] && acc[parent_node][parent_uuid]) {
-                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {...acc[parent_node][parent_uuid],  [node]: elem.value}}}
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {...acc[parent_node][parent_uuid],  [node]: value}}}
                     }
 
-                    return {...acc, [parent_node]: {  [parent_uuid] : {  [node]: elem.value}}}
+                    
+                    if (acc[parent_node]) {
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {  [node]: value}}}
+                    }
+
+
+
+                    return {...acc, [parent_node]: {  [parent_uuid] : {  [node]: value}}}
                 }
             })
 
        
 
             const filesData = Object.keys(files).map(key => {
-                const [head, tail] = [reg1.exec(key), reg3.exec(key)]
+                const [head, reg2tail]  = [reg1.exec(key), reg2.exec(key)]
 
-                if(!tail) {
+                if(!reg2tail) {
                     return {[key]: fields[key]}
                 }
 
-                const {parent_node} = head.groups
-                const {parent_uuid, node_uuid} = tail.groups
+                let tail = [reg2tail[1]]
 
-                return {file:files[key], meta: {parent_node, parent_uuid, file_uuid: node_uuid, collection, entity_uuid } }
+                for (let match; (match = reg2.exec(key)) !== null;)  {
+                    tail = [...tail, match[1]]
+                }
+                  
+
+                const {parent_node} = head.groups
+                const [parent_uuid, _, node_uuid] = tail 
+
+                return {file:files[key], meta: {parent_node, parent_uuid, node_uuid, collection, entity_uuid } }
             })
                 
-            console.log('fieldsObj', fieldsObj)
-            const images = await uploadImagesCommand2(filesData)
-            console.log('images', images)
+            console.log('payload', payload, 'filesData', filesData)
 
+            const images = filesData.length > 0 && await uploadImagesCommand2(filesData) || []
+            images.forEach((image) => {
+                payload[image.parent_node][image.parent_uuid].images = [image]
+            })
+
+            
+
+            updateEntityData(conn, collection)(entity_uuid, payload).then(() => {
+                res.send()
+            }).catch((err) => {
+                console.error(err)
+                res.status(500).send()
+            })
+            
             
         })
 
@@ -289,8 +332,12 @@ const publicImagesRepo = (connection) => {
     publicImagesRouter.get("/entities/:collection/:entity_uuid/images/:file_uuid/:format", async (req, res) => {
 
         const {collection, entity_uuid, file_uuid, format} = req.params
-        const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format)
+        const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format) 
+        || await findEntityContentImage(connection)(collection, entity_uuid, file_uuid, format)
+
         console.log('path', path)
+        
+        
         fs.exists(path, (exists) => {
             if(!exists) {
                 res.status(404)

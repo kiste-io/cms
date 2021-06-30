@@ -1,230 +1,361 @@
-
-const findEntities = (connection, collection) => 
-new Promise((resolve, reject) => connection(async (db) => {
-    
-    const entities = await db.collection(collection).find().toArray()
-    
-    resolve(entities)
-
-}))
-
-const findEntitiesByCategory = (connection, collection, category_uuid) => 
-new Promise((resolve, reject) => connection(async (db) => {
-    
-    try {
-        const entities = await db.collection(collection).find({category_uuid}).toArray()
-    
-        resolve(entities)
-    
-    }catch (e) {
-        reject(e.msg)
-    }
-    
-
-}))
-
-const findEntity = (connection, collection) => (query) => 
-new Promise((resolve, reject) => connection(async (db) => {
-    
-    const entity = await db.collection(collection).findOne(query, {_id: 0})
-    resolve(entity)
-
-}))
+const express = require('express');
+const router = new express.Router();
+const formidable = require('formidable')
+const publicImagesRouter = new express.Router();
+const fs = require('fs')
 
 
-const generateEntitySlug = (name, existing_slugs, iteration=0) => {
-
-const slug = name.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
-
-if(existing_slugs.includes(slug)){
-    return generateEntitySlug(`${name}${++iteration}`, existing_slugs, iteration)
-}else{
-    return slug
-}
-
-
-}
-
-const deleteEntity = (connection) => 
-    (collection, entity_uuid) => 
-        new Promise((resolve, reject) => 
-            connection(db => {
-                db.collection(collection).remove(
-                    {entity_uuid},
-                    (err, result) => {
-                        if(err) reject(err)
-                        else resolve(result)
-                    })
-            }))
-
-
-
-
-const updateEntityData = (connection, collection) => (entity_uuid, payload) => new Promise((resolve, reject) => 
-findEntities(connection, collection).then((entities) => {
-    try {
-        const {title } = payload
-        const entity = entities.find(e => e.entity_uuid === entity_uuid) || {}
-
-        let {slug} = entity
-        if(!slug) {
-            slug = generateEntitySlug(title, entities.map(p => p.slug))
-        }
-    
-        
-        connection(db => {
-            db.collection(collection).updateOne(
-                {entity_uuid}, 
-                {$set: { ...payload, slug }}, 
-                {upsert: true},
-                (err, result) => {
-                    if(err) reject(err)
-                    else resolve(result)
-                })
-        })
-        
-    } catch (err) {
-        reject(err)
-    }        
-})
-)
-
-
-const storeEntityImages = async (connection, collection, query, images) => {
-
-    await connection(async (db) => {
-
-        const file_uuids = images.map(i => i.file_uuid)
-
-        const entity = await db
-        .collection(collection)
-        .findOne(query)
-
-
-
-        const _images = entity === null
-        ? images
-        : (entity.images) 
-            ? [...entity.images.filter(i => !file_uuids.includes(i.file_uuid)), ...images]
-            : images
-        
-        await db
-        .collection(collection)
-        .updateOne(query, {$set : {images: _images}}, {upsert: true})
-
-    })}
-
-const findEntityImage = (connection) => 
-    (collection, entity_uuid, file_uuid, format) => new Promise((resolve, reject) => connection(async (db) => {
-
-         
-        
-        const result = await db
-        .collection(collection)
-        .findOne({entity_uuid})
-    
-        const image = result === null
-        ? null
-        : (result.images) 
-            ? result.images.find(i => i.file_uuid === file_uuid)
-            : null
-    
-        image ? resolve(image.pathes[format]) : resolve(null)
-            
-    }))
-
-
-const deleteEntityImage = (connection) => 
-    (collection, entity_uuid, file_uuid) => new Promise((resolve, reject) => connection(async (db) => {
-
-        const entity = await db
-        .collection(collection)
-        .findOne({entity_uuid})
-
-        if(entity === null || !entity.images) return
-        const _images = entity.images.filter(i => i.file_uuid !== file_uuid)
-        
-        await db
-        .collection(collection)
-        .updateOne({entity_uuid}, {$set : {images: _images}})
-        
-        resolve(true)
-
-}))
-    
-const reorderEntityImage = (connection) =>
-    (collection, entity_uuid, order) => new Promise((resolve, reject) => connection(async (db) => {
-       
-
-        const entityData = await db.collection(collection)
-        .findOne({entity_uuid})
-
-
-        if( entityData === null || !entityData.images) return 
-
-        const orderDict = {}
-        order.forEach(({file_uuid, order}) => orderDict[file_uuid] = order)
-        entityData.images.forEach(i => i.order = orderDict[i.file_uuid])
-
-
-        await db.collection(collection)
-            .updateOne({entity_uuid}, {
-                $set : {images: entityData.images} 
-            })
-
-
-        resolve(true)
-
-    }))
-
-
-const categoryCollection = (collection) => `${collection}_categories`
-
-const findEntityCategories = (connection) => 
-    (collection) => new Promise((resolve, _) => {
-        connection(db => 
-            resolve(db.collection(categoryCollection(collection)).find().toArray()))
-    })
-        
-
-
-const storeEntityCategory = (connection) =>
-    (collection, category_uuid, payload) => new Promise((resolve, reject) =>                     
-        connection(db => {
-            db.collection(categoryCollection(collection)).updateOne(
-                {category_uuid}, 
-                {$set: { ...payload }}, 
-                {upsert: true},
-                (err, result) => {
-                    if(err) reject(err)
-                    else resolve(result)
-                })
-
-
-    }))
-
-const deleteEntityCategory = connection =>
-    (collection, category_uuid) => new Promise((resolve, reject) => connection(db => {
-        db.collection(categoryCollection(collection)).remove(
-            {category_uuid},
-            (err, result) => {
-                if(err) reject(err)
-                else resolve(result)
-            })
-}))
-
-
-module.exports = {
+const {
+    updateEntityData, 
     findEntities,
     findEntitiesByCategory,
-    updateEntityData,
     findEntity,
     deleteEntity,
     storeEntityImages,
     findEntityImage,
-    deleteEntityImage,
+    findEntityContentImage,
     reorderEntityImage,
-    findEntityCategories,
+    deleteEntityImage,
     storeEntityCategory,
+    findEntityCategories,
     deleteEntityCategory
+} = require('./db')
+
+const {
+    uploadImagesCommand,
+    uploadImagesCommand2
+
+} = require('./upload')
+
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+
+const formatEntitesResponse = ({images, content, ...rest}) => {
+    const responseData = {...rest, 
+        images: images && images.map(({file_uuid, uris, order}) =>({file_uuid, order, uri: uris['200x200']}) || []),
+        content: content && Object.keys(content).map && Object.keys(content).map(key => ({
+            content_uuid: key, 
+            ...content[key], 
+            images: content[key].images && content[key].images.map(i => ({uris: i.uris, node_uuid: i.node_uuid}))
+        }))
+        
+    }
+
+    console.log('responseData', responseData)
+
+    return responseData
+}
+
+const config = {
+    collections: {}
+}
+const entitiesCollectionConfig = (collections) => config.collections = collections
+
+
+
+const entitiesRepo = (conn) => {
+
+     // entity collections
+     router.get("/entities", async (req, res) => {
+   
+        const collections = config.collections
+        console.log('collections', collections)
+        res.send(collections)        
+        
+    })
+
+
+
+     // entity categories
+     router.get("/entities/:collection/categories", async (req, res) => {
+        const {collection} = req.params
+
+        findEntityCategories(conn)(collection).then(result => {
+            res.send(result)
+        }).catch(() => {
+            res.status(500)
+            res.send()
+        })
+        
+        
+    })
+
+     // entity categories
+     router.get("/entities/:collection/categories", async (req, res) => {
+        const {collection} = req.params
+
+        findEntityCategories(conn)(collection).then(result => {
+            res.send(result)
+        }).catch(() => {
+            res.status(500)
+            res.send()
+        })
+        
+        
+    })
+     router.post("/entities/:collection/categories/:category_uuid", async (req, res) => {
+        const {collection, category_uuid} = req.params
+        const payload = req.body
+
+        await storeEntityCategory(conn)(collection, category_uuid, payload)
+        
+        res.send()
+    })
+
+    router.get("/entities/:collection/categories/:category_uuid/enities", async (req, res) => {
+        const {collection, category_uuid} = req.params
+
+
+        findEntitiesByCategory(conn, collection, category_uuid).then(result => {
+            res.send(result)
+        }).catch(() => {
+            res.status(500)
+            res.send()
+        })
+        
+        
+    })
+
+    router.delete("/entities/:collection/categories/:category_uuid", async (req, res) => {
+        const {collection, category_uuid} = req.params
+
+        await deleteEntityCategory(conn)(collection, category_uuid)
+        
+        res.send()
+    })
+
+    // entities
+    router.get("/entities/:collection", async (req, res) => {
+
+        const {collection} = req.params;
+
+        findEntities(conn, collection).then((entities) => {
+
+            res.send(entities.map(formatEntitesResponse))
+        })
+        
+    })
+
+    
+
+    router.get("/entities/:collection/:entity_uuid", async (req, res) => {
+
+        const {collection, entity_uuid} = req.params;
+
+        findEntity(conn, collection)({entity_uuid}).then((result) => {
+            res.send(formatEntitesResponse(result || {}))
+        })
+    })
+
+    router.delete("/entities/:collection/:entity_uuid", async (req, res) => {
+
+        const {collection, entity_uuid} = req.params;
+
+        await deleteEntity(conn)(collection, entity_uuid)
+
+        res.send()
+    })
+    
+    router.post("/entities/:collection/:entity_uuid", async (req, res) => {
+    
+        const {collection, entity_uuid} = req.params;
+
+        new formidable.IncomingForm().parse(req, async (err, fields, files)  => {
+
+
+            console.log('/entities/:collection/:entity_uuid', {collection, entity_uuid, err, fields, files})
+            const reg1 = /(?<parent_node>[^\[]*)/
+            const reg2 = /\[(.*?)\]/g
+
+            const parsedFields = Object.keys(fields).map(key => {
+                const [head, reg2tail]  = [reg1.exec(key), reg2.exec(key)]
+
+                if(!reg2tail) {
+                    return {[key]: fields[key]}
+                }
+
+                let tail = [reg2tail[1]]
+
+                for (let match; (match = reg2.exec(key)) !== null;)  {
+                    tail = [...tail, match[1]]
+                }
+                  
+
+                const {parent_node} = head.groups
+                const [parent_uuid, node, node_uuid] = tail 
+                
+
+                return {value: fields[key], meta: {parent_node, parent_uuid, node, node_uuid}}
+
+                
+            })
+
+            const payload = parsedFields.reduce((acc, elem) => {
+                if (!elem.value) return {...acc, ...elem}
+                else {
+                    const {parent_node, parent_uuid, node, node_uuid} = elem.meta
+
+                    const value = elem.value
+                    
+                    if (acc[parent_node] && acc[parent_node][parent_uuid]) {
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {...acc[parent_node][parent_uuid],  [node]: value}}}
+                    }
+
+                    
+                    if (acc[parent_node]) {
+                        return {...acc, [parent_node]: { ...acc[parent_node],  [parent_uuid] : {  [node]: value}}}
+                    }
+
+
+
+                    return {...acc, [parent_node]: {  [parent_uuid] : {  [node]: value}}}
+                }
+            })
+
+       
+
+            const filesData = Object.keys(files).map(key => {
+                const [head, reg2tail]  = [reg1.exec(key), reg2.exec(key)]
+
+                if(!reg2tail) {
+                    return {[key]: fields[key]}
+                }
+
+                let tail = [reg2tail[1]]
+
+                for (let match; (match = reg2.exec(key)) !== null;)  {
+                    tail = [...tail, match[1]]
+                }
+                  
+
+                const {parent_node} = head.groups
+                const [parent_uuid, _, node_uuid] = tail 
+
+                return {file:files[key], meta: {parent_node, parent_uuid, node_uuid, collection, entity_uuid } }
+            })
+                
+            console.log('payload', payload, 'filesData', filesData)
+
+            const images = filesData.length > 0 && await uploadImagesCommand2(filesData) || []
+            images.forEach((image) => {
+                payload[image.parent_node][image.parent_uuid].images = [image]
+            })
+
+            
+
+            updateEntityData(conn, collection)(entity_uuid, payload).then(() => {
+                res.send()
+            }).catch((err) => {
+                console.error(err)
+                res.status(500).send()
+            })
+            
+            
+        })
+
+    
+        
+    })
+    
+    router.post("/entities/:collection/:entity_uuid/images", async (req, res) => {
+    
+        const {collection, entity_uuid} = req.params
+
+        formidable({ multiples: true }).parse(req, function(err, fields, files) {
+    
+            const {images} = fields
+            
+    
+            uploadImagesCommand(collection, entity_uuid, JSON.parse(images), files)
+                .catch((err) => {
+                    console.error(err)
+                    res.status(err.status ? err.status : 500)
+                    res.send()
+                })
+                // quick response
+                .then(images => {
+                    console.log('storeEntityImages', storeEntityImages)
+
+                    storeEntityImages(conn, collection, {entity_uuid}, images).then(() => {
+                        res.status(200)
+                        
+                        res.send(formatEntitesResponse({images}).images)
+                        return images
+                    })// do heavy stuff
+                    .then(async(images) => {
+                         // wait for client reading temporary pathes
+                         await sleep(2000)
+                         // upload to dns server
+                        //uploadToDigitalocean(project_uuid, images)
+                    })       
+                    
+                })                 
+            
+        })
+        
+    })
+    
+    
+    router.put("/entities/:collection/:entity_uuid/images", async (req, res) => {
+
+        const {collection, entity_uuid} = req.params
+        const payload = req.body
+        await reorderEntityImage(conn)(collection, entity_uuid, payload)
+        
+        res.send()
+    
+    })
+    
+    router.delete("/entities/:collection/:entity_uuid/images/:file_uuid", async (req, res) => {
+  
+        const {collection, entity_uuid, file_uuid} = req.params
+        await deleteEntityImage(conn)(collection, entity_uuid, file_uuid)
+        
+        res.send()
+        
+      })
+
+
+   
+    
+
+    return router    
+}
+
+const publicImagesRepo = (connection) => {
+    
+    publicImagesRouter.get("/entities/:collection/:entity_uuid/images/:file_uuid/:format", async (req, res) => {
+
+        const {collection, entity_uuid, file_uuid, format} = req.params
+        const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format) 
+        || await findEntityContentImage(connection)(collection, entity_uuid, file_uuid, format)
+
+        console.log('path', path)
+        
+        
+        fs.exists(path, (exists) => {
+            if(!exists) {
+                res.status(404)
+                res.send(`can not read file by id: ${entity_uuid}`)
+            }else {
+                //response.type('image/jpeg')
+      
+                res.sendFile(path)
+            }
+        })          
+        
+      })
+
+    return publicImagesRouter
+}
+
+module.exports = {
+    entitiesCollectionConfig,
+    entitiesRepo,
+    publicImagesRepo
 }
