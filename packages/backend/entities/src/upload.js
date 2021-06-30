@@ -133,7 +133,7 @@ const uploadImagesCommand2 = (filesData) => from(filesData)
     map(([filedata, pathes]) => urifyImages2(filedata.meta, pathes)),
     scan((acc, value) => [...acc, value], []),
     catchError((err, caught) => {
-        console.error('err, caught', err, caught)
+
         return of([])
     }),
 

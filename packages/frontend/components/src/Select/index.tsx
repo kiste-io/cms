@@ -41,10 +41,11 @@ const SelectMenu = () => {
     const {top, left, width} = rect || {top:0, left:0, width:0}
 
     const clickListener = (e: MouseEvent) => {
-        if(ref && !ref.contains(e.target)) {
+        const target = e.target as HTMLElement
+        if(ref && !ref.contains(target)) {
             dispatch({type: 'COLLAPSE'})
         }
-        if((e.target as HTMLElement).dataset.value) {
+        if(target.dataset.value && ref && ref.contains(target)) {
             const datasetValue = (e.target as HTMLElement).dataset.value
             dispatch({type: 'SELECT', value: datasetValue})
             onChange && onChange(datasetValue)
@@ -57,15 +58,16 @@ const SelectMenu = () => {
     }, [ref])
 
     
-    const currentValue = value || defaultValue
-    const sortedOptions = currentValue 
-    ? [options.find(o => o.value === currentValue), ...options.filter(o => o.value !== currentValue)]
+
+    const existingCurrentValue = options.find(o => o.value === (value || defaultValue))
+    const sortedOptions = existingCurrentValue 
+    ? [existingCurrentValue, ...options.filter(o => o.value !== existingCurrentValue.value)]
     : options
 
     return listed ? <Portal>
         <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
             sortedOptions.map((o, i) => {
-                return <li key={i} className={cx({currentValue: currentValue === o.value})} data-value={o.value}>{o.label}</li>
+                return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value}>{o.label}</li>
             })
         }</ul></div>
     </Portal>

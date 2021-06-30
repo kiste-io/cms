@@ -31,14 +31,15 @@ export const useSelectContext = () => useContext(SelectContext)
 
 const selectReducer = (state, action) => {
     
+    const prefix = state.name.toUpperCase()
     switch(action.type) {
-        case 'LIST':
+        case `${prefix}_LIST`:
             return {...state, listed: true, rect: action.payload.rect, }
-        case 'COLLAPSE':
+        case `${prefix}_COLLAPSE`:
             return {...state, listed: false}
-        case 'SELECT':
+        case `${prefix}_SELECT`:
             return {...state, listed: false, value: action.value}
-        case 'REOPTION':
+        case `${prefix}_REOPTION`:
             return {...state, options: action.options, defaultValue: action.defaultValue}
         default:
             return state
@@ -46,9 +47,10 @@ const selectReducer = (state, action) => {
 }
 
 
-const init = ({name, ...rest}) => ({
+const init = ({name, options, ...rest}) => ({
     id: `${name}_${Math.random().toString(36).slice(-5)}`, 
     name,
+    options: options || [],
     ...rest,     
     listed: false})
 
@@ -69,23 +71,23 @@ export default ({children, ...props}) => {
 
     useEffect(() => {
         if(defaultValue !== state.defaultValue || optionsNotEqual(options,state.options )){
-            dispatch({type: 'REOPTION', defaultValue, options})
+            dispatch({type: `${state.name.toUpperCase()}_REOPTION`, defaultValue, options})
         }
         
     }, [defaultValue, options])
     
     /** native html support for onChange Event */    
     useEffect(() => {
-        if(!state.ref.current) return
+        if(!ref.current || !state.value) return
 
-        const select = (state.ref.current as HTMLBaseElement).querySelector('select')
+        const select = (ref.current as HTMLBaseElement).querySelector('select')
         select.value = state.value;
         select.dispatchEvent(new Event('change'));           
 
     }, [state.value])
 
     
-    return <SelectContext.Provider value={[state, dispatch]}>
+    return <SelectContext.Provider value={[state, (action) => dispatch(({...action, type: `${state.name.toUpperCase()}_${action.type}`}))]}>
         <div ref={ref}>
             {children}
         </div>
