@@ -32,6 +32,7 @@ export const useSelectContext = () => useContext(SelectContext)
 const selectReducer = (state, action) => {
     
     const prefix = state.name.toUpperCase()
+    console.log('state action', state, action)
     switch(action.type) {
         case `${prefix}_LIST`:
             return {...state, listed: true, rect: action.payload.rect, }
@@ -40,7 +41,7 @@ const selectReducer = (state, action) => {
         case `${prefix}_SELECT`:
             return {...state, listed: false, value: action.value}
         case `${prefix}_REOPTION`:
-            return {...state, options: action.options, defaultValue: action.defaultValue}
+            return {...state, options: action.options, defaultValue: action.defaultValue, onChange: action.onChange}
         default:
             return state
     }
@@ -67,25 +68,24 @@ export default ({children, ...props}) => {
     const ref = useRef()
     const [state, dispatch] = useReducer(selectReducer, {...props, ref}, init)
 
-    const {defaultValue, options} = props
+    const {defaultValue, options, onChange} = props
 
     useEffect(() => {
         if(defaultValue !== state.defaultValue || optionsNotEqual(options,state.options )){
-            dispatch({type: `${state.name.toUpperCase()}_REOPTION`, defaultValue, options})
+            dispatch({type: `${state.name.toUpperCase()}_REOPTION`, defaultValue, options, onChange})
         }
         
-    }, [defaultValue, options])
+    }, [defaultValue, options, onChange])
     
     /** native html support for onChange Event */    
     useEffect(() => {
         if(!ref.current || !state.value) return
-
+        
         const select = (ref.current as HTMLBaseElement).querySelector('select')
         select.value = state.value;
         select.dispatchEvent(new Event('change'));           
 
     }, [state.value])
-
     
     return <SelectContext.Provider value={[state, (action) => dispatch(({...action, type: `${state.name.toUpperCase()}_${action.type}`}))]}>
         <div ref={ref}>
