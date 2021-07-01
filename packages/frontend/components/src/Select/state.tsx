@@ -21,7 +21,7 @@ interface SelectConextsState {
     defaultValue?: string,
     value?: string,
     rect?: Rect,
-    onChange?: (value: string) => void
+    onChange?: ({value, label}) => void
     
 }
 
@@ -32,7 +32,7 @@ export const useSelectContext = () => useContext(SelectContext)
 const selectReducer = (state, action) => {
     
     const prefix = state.name.toUpperCase()
-    console.log('state action', state, action)
+    console.log(state, action)
     switch(action.type) {
         case `${prefix}_LIST`:
             return {...state, listed: true, rect: action.payload.rect, }
@@ -41,7 +41,10 @@ const selectReducer = (state, action) => {
         case `${prefix}_SELECT`:
             return {...state, listed: false, value: action.value}
         case `${prefix}_REOPTION`:
-            return {...state, options: action.options, defaultValue: action.defaultValue, onChange: action.onChange}
+            // exclude values not existing in an options
+            const defaultValue = action.options.find(o => o.value === action.defaultValue)?.value
+            const value = action.options.find(o => o.value === state.value)?.value
+            return {...state, options: action.options, defaultValue, value, onChange: action.onChange}
         default:
             return state
     }
@@ -68,14 +71,14 @@ export default ({children, ...props}) => {
     const ref = useRef()
     const [state, dispatch] = useReducer(selectReducer, {...props, ref}, init)
 
-    const {defaultValue, options, onChange} = props
+    const {defaultValue, value, options, onChange} = props
 
     useEffect(() => {
         if(defaultValue !== state.defaultValue || optionsNotEqual(options,state.options )){
             dispatch({type: `${state.name.toUpperCase()}_REOPTION`, defaultValue, options, onChange})
         }
         
-    }, [defaultValue, options, onChange])
+    }, [defaultValue, value, options, onChange])
     
     /** native html support for onChange Event */    
     useEffect(() => {

@@ -46,9 +46,10 @@ const SelectMenu = () => {
             dispatch({type: 'COLLAPSE'})
         }
         if(target.dataset.value && ref && ref.contains(target)) {
-            const datasetValue = (e.target as HTMLElement).dataset.value
-            dispatch({type: 'SELECT', value: datasetValue})
-            onChange && onChange(datasetValue)
+            const {value, label} = target.dataset
+            
+            dispatch({type: 'SELECT', value, label })
+            onChange && onChange({value, label})
         }
     }
 
@@ -67,17 +68,16 @@ const SelectMenu = () => {
     return listed ? <Portal>
         <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
             sortedOptions.map((o, i) => {
-                return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value}>{o.label}</li>
+                return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value} data-label={o.label}>{o.label}</li>
             })
         }</ul></div>
     </Portal>
     : null
 }
 
-const SelectValue = ({value, options}) => !value 
-    ? null 
-    : <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
-
+const SelectValue = ({value, options}) => value && options.find(o => o.value === value)
+    ? <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
+    : null 
     
 
 
@@ -90,6 +90,12 @@ const SelectNode = () => {
         dispatch({type: 'LIST', payload: {rect}})
     }
 
+    
+    const selectedValue = (value || defaultValue)
+    const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
+
+    console.log('selectedValue', selectedValue,'existingSelectedValue', existingSelectedValue )
+
     return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
@@ -97,8 +103,9 @@ const SelectNode = () => {
             
             <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
             
-            <select name={name} value={value || defaultValue} id={id}>
-                {options.map((o, i) =><option key={i} value={o.value}>{o.label}</option>)}
+            <select name={name} value={existingSelectedValue} id={id}>
+                <option value=""></option>
+                {options.map((o, i) =><option key={`${o.value}_${i}`} value={o.value}>{o.label}</option>)}
             </select>
         </div>
 
