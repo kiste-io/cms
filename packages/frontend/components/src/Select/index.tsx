@@ -94,8 +94,6 @@ const SelectNode = () => {
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
 
-    console.log('selectedValue', selectedValue,'existingSelectedValue', existingSelectedValue )
-
     return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
