@@ -1,4 +1,4 @@
-const {hashPassword, compareHashes} = require('./crypt')
+const {comparePassword} = require('./crypt')
 
 module.exports = (connection) => ({
 
@@ -57,19 +57,19 @@ module.exports = (connection) => ({
   
     getUser: async function(username, password) {
         
-        const password_hash = await hashPassword(password)
         const user = await new Promise((resolve, reject) => connection((db) => db
-            .collection('users')
-            .findOne({
-                username
-            }, (err, result) => {
-                console.error(err)
-                resolve(result)
-            })).catch((e) => reject(e)))
+        .collection('users')
+        .findOne({
+            username
+        }, (err, result) => {
+            console.error(err)
+            resolve(result)
+        })).catch((e) => reject(e)))
 
-        await compareHashes(password_hash, user.password_hash)   
-        ? user
-        : null
+        if(user.password_hash && await comparePassword(password, user.password_hash)) {
+            return user
+        }
+        return null
     },
 
     
