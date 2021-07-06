@@ -279,9 +279,9 @@ const entitiesRepo = (conn) => {
             const filesPayload = fieldsToJSON(files)  
             const filesImagesPayloadArray = Array.isArray(filesPayload.images) ? filesPayload.images : [filesPayload.images].filter(el => el)
             
-            const imagesMeta = Object
+            const imagesMeta = fieldsPayload.images && Object
                 .keys(fieldsPayload.images)
-                .map(node_uuid => ({node_uuid, ...fieldsPayload.images[node_uuid]}))
+                .map(node_uuid => ({node_uuid, ...fieldsPayload.images[node_uuid]})) || []
             
             const imagesPayload = filesImagesPayloadArray.map(file => {
                 const uri =  encodeURI(file.name)
@@ -296,8 +296,7 @@ const entitiesRepo = (conn) => {
             } )
             
             const images = imagesPayload && imagesPayload.length > 0 && await uploadImagesCommand2(imagesPayload) || []
-
-            images.forEach((image) => {
+            fieldsPayload.images && images.forEach((image) => {
                 fieldsPayload.images[image.node_uuid] = {...fieldsPayload.images[image.node_uuid], ...image}
             })
             
