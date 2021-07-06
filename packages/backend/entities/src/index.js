@@ -3,6 +3,7 @@ const router = new express.Router();
 const formidable = require('formidable')
 const publicImagesRouter = new express.Router();
 const fs = require('fs')
+const {fieldsToJSON} = require('./utils')
 
 
 const {
@@ -35,14 +36,18 @@ function sleep(ms) {
   }
 
 
-const formatEntitesResponse = ({images, content, ...rest}) => {
+const formatEntitesResponse = ({images, content, parameter, ...rest}) => {
     const responseData = {...rest, 
-        images: images && images.map(({file_uuid, uris, order}) =>({file_uuid, order, uri: uris['200x200']}) || []),
+        images: images && Object.keys(images).map &&  Object.keys(images).map(key => ({node_uuid: key, order: images[key].order, uris: images[key].uris}) || []),
         content: content && Object.keys(content).map && Object.keys(content).map(key => ({
             content_uuid: key, 
             ...content[key], 
             images: content[key].images && content[key].images.map(i => ({uris: i.uris, node_uuid: i.node_uuid}))
-        }))
+        })),
+        parameter: parameter && Object.keys(parameter).map && Object.keys(parameter).map(key => ({
+            parameter_uuid: key, 
+            ...parameter[key]
+        })),
         
     }
 
@@ -161,7 +166,7 @@ const entitiesRepo = (conn) => {
         res.send()
     })
     
-    router.post("/entities/:collection/:entity_uuid", async (req, res) => {
+    /*router.post("/entities/:collection/:entity_uuid", async (req, res) => {
     
         const {collection, entity_uuid} = req.params;
 
@@ -258,6 +263,55 @@ const entitiesRepo = (conn) => {
             
         })
 
+    
+        
+    })
+    */
+
+    router.post("/entities/:collection/:entity_uuid", async (req, res) => {
+    
+        const {collection, entity_uuid} = req.params;
+
+        formidable({ multiples: true }).parse(req, async (err, fields, files)  => {
+
+            const fieldsPayload =  fieldsToJSON(fields)
+
+            const filesPayload = fieldsToJSON(files)  
+            const filesImagesPayloadArray = Array.isArray(filesPayload.images) ? filesPayload.images : [filesPayload.images].filter(el => el)
+            
+            const imagesMeta = Object
+                .keys(fieldsPayload.images)
+                .map(node_uuid => ({node_uuid, ...fieldsPayload.images[node_uuid]}))
+            
+            const imagesPayload = filesImagesPayloadArray.map(file => {
+                const uri =  encodeURI(file.name)
+
+                const node_uuid = imagesMeta.find(i => i.uri === uri)?.node_uuid
+
+                return {file, meta: {
+                    node_uuid, 
+                    collection, 
+                    entity_uuid 
+                }}
+            } )
+            
+            const images = imagesPayload && imagesPayload.length > 0 && await uploadImagesCommand2(imagesPayload) || []
+
+            images.forEach((image) => {
+                fieldsPayload.images[image.node_uuid] = {...fieldsPayload.images[image.node_uuid], ...image}
+            })
+            
+
+            const titleForSlug = fieldsPayload?.title?.en || fieldsPayload?.title?.de || "entity"
+
+            const payload = fieldsPayload
+            updateEntityData(conn, collection)(entity_uuid, payload, titleForSlug).then(() => {
+                res.send()
+            }).catch((err) => {
+                console.error(err)
+                res.status(500).send()
+            })
+        })
     
         
     })

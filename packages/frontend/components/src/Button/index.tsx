@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useState, useRef} from 'react';
 import PropTypes from 'prop-types';
 import style from './style.module.scss';
 import classnames from 'classnames/bind';
+import { v4 as uuidv4} from 'uuid'
 
 const cx = classnames.bind(style);
 
@@ -10,35 +11,13 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary = false, size = 'medium', label, as, ...props }) => {
+export const Button = ({ primary = false, size = 'medium', label, icon, as, ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
-  return React.createElement(as, {
-    className: cx('Button', size, mode),
-    ...props},
-    label)
+  return React.createElement(as, 
+    { className: cx('Button', size, mode), ...props },
+    icon ? icon : label)
   }
-
-Button.propTypes = {
-  /**
-   * Is this the principal call to action on the page?
-   */
-  primary: PropTypes.bool,
-  /**
-   * How large should the button be?
-   */
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  /**
-   * Button contents
-   */
-  label: PropTypes.string.isRequired,
-  /**
-   * Optional click handler
-   */
-  onClick: PropTypes.func,
-
-  as: PropTypes.string
-};
 
 Button.defaultProps = {
   primary: false,
@@ -46,3 +25,35 @@ Button.defaultProps = {
   onClick: undefined,
   as: 'button'
 };
+
+
+
+/**
+ * 
+ *  Upload Button as special case
+ */
+
+
+
+export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon}) => {
+
+    const enrichOnChange = (e) => {
+      const files = Array.from(e.target.files)
+      onChange(files)
+    } 
+
+    return (<div >
+        <label htmlFor={id}>            
+            <Button icon={icon} label={label} as='span' />        
+        </label>
+        <input
+              name={name}
+              style={{display: 'none'}}
+              accept={accept}
+              id={id}
+              multiple={multiple}
+              type="file"
+              onChange={enrichOnChange}
+          />
+    </div>)
+}

@@ -1,6 +1,6 @@
-export {Button} from './Button'
+export {Button, UploadButton} from './Button'
 export {Input} from './Input'
 export {Select} from './Select'
 export {Alert} from './Alert'
 export {Editor} from './Editor'
-export {ImageUpload} from './Upload'
+export {Icon} from './Icons'

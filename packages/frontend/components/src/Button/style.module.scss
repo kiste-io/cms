@@ -1,6 +1,9 @@
 @import 'variables';
 
 .Button {
+
+    display: flex;
+    align-self: center;
     
     font-family: $font-family-text;
     font-weight: 700;
@@ -28,7 +31,7 @@
   }
   &.small {
     font-size: 12px;
-    padding: 10px 16px;
+    padding: 10px 16px;   
   }
   &.medium {
     font-size: 14px;
