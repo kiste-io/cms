@@ -37,6 +37,8 @@ export const ButtonGroup = ({children}) => <div className={cx('ButtonGroup')}>{c
 
 export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon}) => {
 
+    const [upload, setUpload] = useState(false)
+
     const enrichOnChange = (e) => {
       const files = Array.from(e.target.files)
       onChange(files)
@@ -44,9 +46,9 @@ export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, 
 
     return (<div >
         <label htmlFor={id}>            
-            <Button icon={icon} label={label} as='span' />        
+            <Button icon={icon} label={label} as='span' onClick={() => setUpload(true)} />        
         </label>
-        <input
+        {upload && <input
               name={name}
               style={{display: 'none'}}
               accept={accept}
@@ -54,6 +56,7 @@ export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, 
               multiple={multiple}
               type="file"
               onChange={enrichOnChange}
-          />
+          />}
+        
     </div>)
 }

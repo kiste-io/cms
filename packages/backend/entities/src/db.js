@@ -34,8 +34,7 @@ new Promise((resolve, reject) => connection(async (db) => {
 
 const generateEntitySlug = (name, existing_slugs, iteration=0) => {
 
-console.log('(name.en || name.de || name)', name.en, name.de, name)
-const slug = (name.en || name.de || name).toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
+const slug = name.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
 
 if(existing_slugs.includes(slug)){
     return generateEntitySlug(`${name}${++iteration}`, existing_slugs, iteration)
@@ -61,53 +60,41 @@ const deleteEntity = (connection) =>
 
 
 
-const updateEntityData = (connection, collection) => (entity_uuid, payload, titleForSlug) => new Promise((resolve, reject) => 
+const updateEntityData = (connection, collection) => (entity_uuid, payload) => new Promise((resolve, reject) => 
 findEntities(connection, collection).then((entities) => {
     try {
+        const {title } = payload
         const entity = entities.find(e => e.entity_uuid === entity_uuid) || {}
 
         let {slug} = entity
         if(!slug) {
-            slug = generateEntitySlug(titleForSlug, entities.map(p => p.slug))
+            slug = generateEntitySlug(title, entities.map(p => p.slug))
         }
 
-        const {content, images} = entity
+        const {content} = entity
         if(content && payload.content) {
             Object.keys(content).map(content_uuid => {
                 // if image file_uuid exists already then just take the current state 
                 if(payload.content[content_uuid] && payload.content[content_uuid].keepimage && content[content_uuid].images) {
 
                     const node_uuid = payload.content[content_uuid].keepimage
-                    const image = content[content_uuid].images.find(img => img.node_uuid === node_uuid)
+                    const image = content[content_uuid].images[node_uuid]
                     if(image) {
-                        payload.content[content_uuid].images = [image]
+                        payload.content[content_uuid].images = {[node_uuid]: image}
                         delete(payload.content[content_uuid].keepimage)
                     }
                     
                 }
             })
         }
-
-        if (images && payload.images) {
-            Object.keys(images).map(node_uuid => {
-                if(payload.images[node_uuid]){
-                    payload.images[node_uuid] = {...images[node_uuid], ...payload.images[node_uuid]}
-                }
-                
-            })
-        }
     
+        console.log('update payload', payload, )
 
         let statement = {'$set': { ...payload, slug }}
         if(!payload.content) {
-            statement['$unset'] = {...statement['$unset'], 'content' : ''}
+            statement = {...statement, "$unset": {'content' : ''}}
         }
-        if(!payload.parameter) {
-            statement['$unset'] = {...statement['$unset'], 'parameter' : ''}
-        }
-        if(!payload.images) {
-            statement['$unset'] = {...statement['$unset'], 'images' : ''}
-        }
+        //reject()
         connection(db => {
             db.collection(collection).updateOne(
                 {entity_uuid}, 
@@ -162,7 +149,7 @@ const findEntityImage = (connection) =>
         const image = result === null
         ? null
         : (result.images) 
-            ? result.images[file_uuid]
+            ? result.images.find(i => i.file_uuid === file_uuid)
             : null
     
         image ? resolve(image.pathes[format]) : resolve(null)
@@ -181,10 +168,10 @@ const findEntityContentImage = (connection) =>
     const content = result === null
     ? null
     : (result.content) 
-        ? Object.values(result.content).find(c => c.images && c.images.map && c.images.map(({node_uuid}) => node_uuid).includes(node_uuid))
+        ? Object.values(result.content).find(c => c.images && c.images && c.images[node_uuid])
         : null
 
-    const path = content && content.images && content.images[0].pathes && content.images[0].pathes[format]
+    const path = content && content.images && content.images[node_uuid].pathes && content.images[node_uuid].pathes[format]
 
     path ? resolve(path) : resolve(null)
         
