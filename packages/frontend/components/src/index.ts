@@ -1,4 +1,4 @@
-export {Button, UploadButton} from './Button'
+export {Button, UploadButton, ButtonGroup} from './Button'
 export {Input} from './Input'
 export {Select} from './Select'
 export {Alert} from './Alert'

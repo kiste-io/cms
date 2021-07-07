@@ -27,11 +27,14 @@
     box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
     &:hover {
       background-color: $color-primary-30;
-    }
+    }    
   }
   &.small {
     font-size: 12px;
     padding: 10px 16px;   
+    &.icon {
+      padding: 5px 7px;   
+    }
   }
   &.medium {
     font-size: 14px;
@@ -47,4 +50,24 @@
     box-shadow: $color-primary-1200 0px 0px 0px 2px inset;
   }
   
+}
+
+.ButtonGroup {
+
+  background: #f1f1f1;
+  display: grid;
+  grid-auto-flow: column;
+  grid-gap: 1px;
+  overflow: hidden;
+  border-radius: .3rem;
+  border: 1px solid  $color-primary-100;
+  padding: 1px;
+  width: fit-content;
+  
+  .Button {
+    background: #fff;
+    box-shadow: none;
+    border-radius: 0;
+
+  }
 }

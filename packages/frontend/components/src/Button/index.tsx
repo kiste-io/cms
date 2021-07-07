@@ -2,7 +2,6 @@ import React, {useState, useRef} from 'react';
 import PropTypes from 'prop-types';
 import style from './style.module.scss';
 import classnames from 'classnames/bind';
-import { v4 as uuidv4} from 'uuid'
 
 const cx = classnames.bind(style);
 
@@ -11,21 +10,22 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary = false, size = 'medium', label, icon, as, ...props }) => {
+export const Button = ({ primary = false, size = 'medium', label = null, icon = null, as = 'button', ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
   return React.createElement(as, 
-    { className: cx('Button', size, mode), ...props },
+    { className: cx('Button', size, mode, {icon}), ...props },
     icon ? icon : label)
   }
 
-Button.defaultProps = {
-  primary: false,
-  size: 'medium',
-  onClick: undefined,
-  as: 'button'
-};
 
+
+/**
+ * 
+ *
+ */
+
+export const ButtonGroup = ({children}) => <div className={cx('ButtonGroup')}>{children}</div>
 
 
 /**

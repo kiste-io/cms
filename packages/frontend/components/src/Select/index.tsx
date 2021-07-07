@@ -1,35 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
 import style from './style.module.scss';
 import SelectContext, {useSelectContext} from './state';
-
+import Portal from '../Portal';
 const cx = classnames.bind(style)
-
-
-const Portal = ({children}) => {
-
-    const [portal, setPortal] = useState<HTMLDivElement>()
-
-    useEffect(() => {
-
-        const div = document.createElement("div")
-        div.setAttribute('id',  `portal_${Math.random().toString(36).slice(-5)}`)
-        document.body.appendChild(div)
-
-        setPortal(div)
-
-        return () => {
-            setPortal(undefined)
-            document.body.removeChild(div)
-        }
-
-    }, [])
-
-
-    return portal && ReactDOM.createPortal(children, portal) || null
-}
 
 
 const SelectMenu = () => {

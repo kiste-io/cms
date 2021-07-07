@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import style from './style.module.scss';
 import classnames from 'classnames/bind';
+import {Button, ButtonGroup, Icon} from '..'
+import Portal from '../Portal';
 
 const cx = classnames.bind(style);
 
@@ -16,13 +18,16 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   const position = range.getBoundingClientRect()
   const {left, width, top} = position
 
-  const startLinking = () => {
+  const startLinking = (e) => {
+    e.preventDefault()
+
     setLink({...link, mode: true}); 
     setIamIjectingLink(true)
   }
 
   const injectLink = (e) => {
     e.preventDefault()
+
     const parent = document.createElement(`a`)
     parent.href = link.url
     parent.appendChild(range.extractContents())
@@ -40,8 +45,10 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
     range.insertNode(parent)
     setReplacement(range)
   }
+
   const setBold = (e) => {
     e.preventDefault()
+
     const parent = document.createElement('b');
     parent.appendChild(range.extractContents())
     range.insertNode(parent)
@@ -50,6 +57,7 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   }
   const setUnderline = (e) => {
     e.preventDefault()
+
     const parent = document.createElement('u');
     parent.appendChild(range.extractContents())
     range.insertNode(parent)
@@ -57,21 +65,22 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
     setReplacement(range)
   }
   
-
-  return (<div className="editor_actions_menu" onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
+  return (<div className={cx('EditorActionsMenu')} onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
     {!link.mode 
-    ?
-    <ul>
-      <li><button onClick={startLinking}>Link</button></li>
-      <li><button onClick={setItalic}>Italic</button></li>
-      <li><button onClick={setBold}>Bold</button></li>
-      <li><button onClick={setUnderline}>Underline</button></li>
-    </ul>
-    : <fieldset>
-        <label htmlFor="link">URL</label>
-        <input name="link" id="link" onChange={e => setLink({...link, url: e.target.value})} />
-        <button onClick={injectLink}>insert button</button>
-      </fieldset>
+    ?<ButtonGroup>
+        <Button size="small" icon={<Icon.Link height="18" width="18" />} onClick={startLinking} />
+
+        <Button size="small" icon={<Icon.Italic height="18" width="18" />} onClick={setItalic} />
+
+        <Button size="small" icon={<Icon.Bold height="18" width="18" />}  onClick={setBold} />
+
+        <Button size="small" icon={<Icon.Underline height="18" width="18"/>}  onClick={setUnderline} />
+
+      </ButtonGroup>
+    : <ButtonGroup>
+        <input name="link" id="link" onChange={e => setLink({...link, url: e.target.value})} placeholder="https://" />
+        <Button as="span" size="small" label="ok" onClick={injectLink} />
+      </ButtonGroup>
     }
   </div>)
 }
@@ -140,7 +149,9 @@ export const Editor = ({name, html = '', debug = false}) => {
       {ContentEditor}
       <Textarea name={name} className={cx({debug})} editorInnerHTML={editorInnerHTML} />
     </div>
-    <EditorActionsMenu {...{...selection, setIamIjectingLink, setReplacement}} />
+    <Portal>
+        <EditorActionsMenu {...{...selection, setIamIjectingLink, setReplacement}} />
+    </Portal>
   </>
 
 }

@@ -1,5 +1,5 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
-import {Button} from '.'
+import {Button, ButtonGroup} from '.'
 import {Icon} from '../'
 
 <Meta title="Components / Button" />
@@ -21,6 +21,13 @@ import {Icon} from '../'
         <Button label='Button' size="small" as="span" />
     </Story>
     <Story name="icons">
-        <Button icon={<Icon.Delete />} size="small" circle  as="span" />
+        <Button icon={<Icon.Delete />} size="small"  as="span" />
+    </Story>
+    <Story name="button group">
+        <ButtonGroup>
+            <Button icon={<Icon.Delete />} size="small"   as="span" />
+            <Button icon={<Icon.Bold />} size="small"   as="span" />
+            <Button icon={<Icon.Underline />} size="small"   as="span" />
+        </ButtonGroup>
     </Story>
 </Canvas>
