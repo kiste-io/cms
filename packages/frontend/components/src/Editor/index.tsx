@@ -147,7 +147,7 @@ export const Editor = ({name, html = '', debug = false}) => {
   return <>    
     <div className={cx("Editor")}>
       {ContentEditor}
-      <Textarea name={name} className={cx({debug})} editorInnerHTML={editorInnerHTML} />
+      <NativeTextarea name={name} className={cx({debug})} editorInnerHTML={editorInnerHTML} />
     </div>
     <Portal>
         <EditorActionsMenu {...{...selection, setIamIjectingLink, setReplacement}} />
@@ -167,7 +167,7 @@ const iContent = /(<i.*?>)(?<content>.*?)(<\/i>)/g
 
 
 
-const Textarea = ({name, className, editorInnerHTML}) => {
+const NativeTextarea = ({name, className, editorInnerHTML}) => {
   const html = (editorInnerHTML || '')
   .replace(firstLineContent, "<p>$<content></p><div>")
   .replace(breakedContent, "<br>")
@@ -179,4 +179,16 @@ const Textarea = ({name, className, editorInnerHTML}) => {
   .replaceAll(/(<p><\/p>)/g, "")
 
   return <textarea readOnly className={className} name={name} value={html}></textarea>
+}
+
+
+
+
+export const Textarea = ({id, name, label, defaultValue=""}) => {
+
+  return <div className={cx('Textarea')}>
+      {label && <label htmlFor={id}>{label}</label>} 
+      <textarea id={id} name={name} defaultValue={defaultValue}></textarea>      
+
+    </div>
 }

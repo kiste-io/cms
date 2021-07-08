@@ -1,5 +1,5 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
-import {Editor} from '../'
+import {Editor, Textarea} from '../'
 import {useState, useEffect} from 'react'
 
 <Meta title="Components / Editor" />
@@ -7,8 +7,11 @@ import {useState, useEffect} from 'react'
 
 # Editor
 <Canvas>
-    <Story name="initial">
-        <Editor debug/>
+    <Story name="Text Editor">
+        <Editor/>
+    </Story>
+    <Story name="Textarea">
+        <Textarea id="textarea" name="text" label="Plain text ..." />
     </Story>
 </Canvas>
 

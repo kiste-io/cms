@@ -22,6 +22,16 @@
     &:hover {
       background-color: $color-primary-1100;
     }
+    &.disabled {
+      box-shadow: $color-default-50 0px 0px 0px 2px inset;
+      color: $color-default-100;
+      background: none;
+      &:hover {
+        cursor: default;
+        background: none;
+      }
+      
+    }
   }
   &.default {
     color: #333;
@@ -55,10 +65,12 @@
   &.disabled {
     box-shadow: $color-default-50 0px 0px 0px 2px inset;
     color: $color-default-100;
+    background: none;
     &:hover {
       cursor: default;
       background: none;
     }
+    
   }
   
 }
