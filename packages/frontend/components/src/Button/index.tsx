@@ -10,11 +10,11 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary = false, size = 'medium', label = null, icon = null, as = 'button', ...props }) => {
+export const Button = ({ primary = false, size = 'medium', label = null, icon = null, disabled = false, as = 'button', ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
   return React.createElement(as, 
-    { className: cx('Button', size, mode, {icon}), ...props },
+    { className: cx('Button', size, mode, {icon, disabled}), ...props },
     icon ? icon : label)
   }
 
