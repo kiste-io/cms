@@ -1,0 +1,17 @@
+import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
+import {Tabs} from '../'
+import {useState, useEffect} from 'react'
+
+<Meta title="Components / Tabs" />
+
+
+# Tabs
+<Canvas>
+    <Story name="initial">
+        <Tabs 
+            items={[{id: 'id1', label:'one'}, {id: 'id2', label:'two'},{id: 'id3', label:'three'}]} 
+        ><div id="id1"> ID 1 </div><div id="id2"> ID 2 </div><div id="id3"> ID 3 </div></Tabs>
+    </Story>
+</Canvas>
+
+

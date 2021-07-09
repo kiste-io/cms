@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useState } from 'react';
 
-
+// read!!!!! https://kentcdodds.com/blog/using-fetch-with-type-script
 export const fetchLogin = (TOKEN_ENDPOINT, {username, password}) => new Promise(async (resolve, reject) => {
  
     try {

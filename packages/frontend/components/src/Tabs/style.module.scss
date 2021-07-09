@@ -1,0 +1,44 @@
+@import 'variables';
+
+
+.TabsCards {
+    overflow-x: hidden;
+
+}
+.Tabs {
+    display: flex;    
+    transition: transform .3s ease-in-out ;
+    
+    label {
+        border-bottom: 3px solid transparent;        
+        padding: .7rem 1.5rem;
+        cursor: pointer;
+
+        &:hover{
+            background: $color-primary-100;
+        }
+    }
+
+    .active {
+        border-color: $color-primary;
+        color: $color-primary;
+    }
+
+
+    
+
+}
+
+.Cards {
+    
+    display: flex;    
+    
+    transition: transform .1s ease-in-out ;
+
+    > div {
+        width: 100%;
+        flex-shrink: 0;
+    }
+
+}
+
