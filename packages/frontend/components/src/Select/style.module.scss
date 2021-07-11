@@ -15,6 +15,12 @@
         transition: transform 0.15s;
     }
 
+    &.small {
+        > label, > span {
+            font-size: 12px;
+        }
+    }
+
     > label {
         display: flex;
     }
@@ -26,6 +32,13 @@
         top: 20px;
     }
 
+    &.small {
+        > span {
+            left: 8px;
+            top: 8px;
+        }
+    }
+   
 
     > svg {
         right: $space-l;
@@ -35,9 +48,15 @@
         height: 1em;
         font-size: 1.5rem;
         position: absolute;
-
     }
     
+    &.small {
+        > svg {
+            font-size: 1rem;
+            top: calc(50% - 8px);
+
+        }
+    }
     > select {
         left: 0;
         width: 100%;
@@ -49,7 +68,11 @@
 
     &.toPortal {
         
-        @include form-box;        
+        @include form-box;     
+        
+        &.small {
+            @include small-form-box;     
+        }
 
 
         &:hover {
@@ -102,6 +125,12 @@
         }
             
     }
+
+    &.small {
+        label {
+            transform: translate(-8px, -1.3rem);
+        }
+    }
 }
 
 .SelectMenu {
@@ -111,6 +140,8 @@
     border:none;
     border-radius: 4px;
     overflow: hidden;
+    font-size: 14px;
+
     ul {
         list-style: none;
         margin: 0;
@@ -120,13 +151,11 @@
 
         li {
             
-            padding: 20px 20px;
+            padding: $padding-large;
             font-family: $font-family-text;
-            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             line-height: 1.3rem;
-            padding-left: 20px;
             transition: all .1s ease-in;
 
             &:hover {
@@ -137,6 +166,16 @@
                 color: $color-primary;
                 background:  $color-primary-100;
             }
+        }
+    }
+
+    &.small {
+        font-size: 12px;
+
+        li {
+            
+            padding: $padding-small ;
+
         }
     }
 }

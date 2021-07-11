@@ -11,3 +11,13 @@ $radius-default: 4px;
     padding: $padding-large;
     line-height: 1.3rem;
 }
+
+
+@mixin small-form-box {
+    background-color: transparent;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+    border:none;
+    border-radius: 4px;
+    padding: $padding-small;
+    line-height: 0.8rem;
+}

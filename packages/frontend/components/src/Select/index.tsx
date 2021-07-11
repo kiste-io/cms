@@ -10,7 +10,7 @@ const cx = classnames.bind(style)
 const SelectMenu = () => {
 
     const [ref, setRef] = useState(null)
-    const [{options, rect, listed, value, defaultValue, onChange}, dispatch] = useSelectContext()
+    const [{options, rect, listed, value, defaultValue, onChange, small}, dispatch] = useSelectContext()
 
     
     const {top, left, width} = rect || {top:0, left:0, width:0}
@@ -41,7 +41,7 @@ const SelectMenu = () => {
     : options
 
     return listed ? <Portal>
-        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu')} style={{top, left, width}}><ul>{
+        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu', {small})} style={{top, left, width}}><ul>{
             sortedOptions.map((o, i) => {
                 return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value} data-label={o.label}>{o.label}</li>
             })
@@ -58,7 +58,7 @@ const SelectValue = ({value, options}) => value && options.find(o => o.value ===
 
 const SelectNode = () => {
     const ref = useRef()
-    const [{listed, name, defaultValue, value, id, label, options}, dispatch] = useSelectContext()
+    const [{listed, name, defaultValue, value, id, label, options, small}, dispatch] = useSelectContext()
 
     const handlClick = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
@@ -69,7 +69,7 @@ const SelectNode = () => {
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
 
-    return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue})} onClick={handlClick}>
+    return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small})} onClick={handlClick}>
             <label htmlFor={id}>{label}</label>
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
