@@ -1,6 +1,6 @@
 {
   "name": "@kiste/backend-entities",
-  "version": "0.0.18-alpha.0",
+  "version": "0.0.18",
   "description": "> TODO: description",
   "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
   "homepage": "",
@@ -13,11 +13,11 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "dependencies": {
+    "dotenv": "^10.0.0",
     "formidable": "^1.2.2",
     "rxjs": "^7.1.0",
     "sharp": "^0.28.3",
-    "uuid4": "^2.0.2",
-    "dotenv": "^10.0.0"
+    "uuid4": "^2.0.2"
   },
   "devDependencies": {
     "express": "^4.17.1"
