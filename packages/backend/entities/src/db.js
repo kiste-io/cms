@@ -34,13 +34,13 @@ new Promise((resolve, reject) => connection(async (db) => {
 
 const generateEntitySlug = (name, existing_slugs, iteration=0) => {
 
-const slug = name.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
+    const slug = name.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
 
-if(existing_slugs.includes(slug)){
-    return generateEntitySlug(`${name}${++iteration}`, existing_slugs, iteration)
-}else{
-    return slug
-}
+    if(existing_slugs.includes(slug)){
+        return generateEntitySlug(`${name}${++iteration}`, existing_slugs, iteration)
+    }else{
+        return slug
+    }
 
 
 }
@@ -68,7 +68,7 @@ findEntities(connection, collection).then((entities) => {
 
         let {slug} = entity
         if(!slug) {
-            slug = generateEntitySlug(title, entities.map(p => p.slug))
+            slug = generateEntitySlug(title.en || title.de || 'entity', entities.map(p => p.slug))
         }
 
         const {images} = entity
