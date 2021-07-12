@@ -16,7 +16,8 @@
     "formidable": "^1.2.2",
     "rxjs": "^7.1.0",
     "sharp": "^0.28.3",
-    "uuid4": "^2.0.2"
+    "uuid4": "^2.0.2",
+    "dotenv": "^10.0.0"
   },
   "devDependencies": {
     "express": "^4.17.1"

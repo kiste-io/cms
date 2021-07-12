@@ -3,7 +3,10 @@ const {map, tap, takeUntil, mergeMap, reduce, scan, catchError} = require('rxjs/
 const fs = require('fs')
 const sharp = require('sharp')
 const uuid4 = require('uuid4')
+require('dotenv').config()
 
+
+const imgRootDir = `${process.env.IMG_ROOT_DIR}`;
 
 const resizeCover  = (src_file, dist_file, length, entropy) => 
     sharp(src_file)
@@ -18,6 +21,7 @@ const resizeCover  = (src_file, dist_file, length, entropy) =>
         .then(_ => dist_file)
 
     
+        
 
 
 
@@ -127,7 +131,7 @@ const uploadImagesCommand = (collection, uuid, fields, files) => of(true)
 const uploadImagesCommand2 = (filesData) => from(filesData)
 .pipe(        
     /** resize and store locally images */
-    mergeMap(filedata =>  zip(of(filedata), from(ensureDir(`/tmp/${filedata.meta.entity_uuid}`)))),
+    mergeMap(filedata =>  zip(of(filedata), from(ensureDir(`${imgRootDir}/${filedata.meta.entity_uuid}`)))),
     mergeMap(([filedata, dir]) => zip(of(filedata), from(resize(dir, filedata.file)))),
     
     map(([filedata, pathes]) => urifyImages2(filedata.meta, pathes)),
