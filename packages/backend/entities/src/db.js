@@ -79,7 +79,7 @@ findEntities(connection, collection).then((entities) => {
 
                     const image = images[node_uuid]
                     if(image) {
-                        payload.images[node_uuid] = {...payload.images[node_uuid], ...image}
+                        payload.images[node_uuid] = {...image, ...payload.images[node_uuid]}
                     }
                     
                 }

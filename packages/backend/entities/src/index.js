@@ -38,7 +38,7 @@ function sleep(ms) {
 
 const formatEntitesResponse = ({images, content, parameter, ...rest}) => {
     const responseData = {...rest, 
-        images: images && Object.keys(images).map &&  Object.keys(images).map(key => ({node_uuid: key, order: images[key].order, uris: images[key].uris}) || []),
+        images: images && Object.keys(images).map &&  Object.keys(images).map(key => ({node_uuid: key, order: images[key].order, uris: images[key].uris, uri:images[key].uri}) || []),
         content: content && Object.keys(content).map && Object.keys(content).map(key => ({
             content_uuid: key, 
             ...content[key]
@@ -177,11 +177,12 @@ const entitiesRepo = (conn) => {
             const filesPayload = fieldsToJSON(files)  
             /** root images */
             const filesImagesPayloadArray = Array.isArray(filesPayload.images) ? filesPayload.images : [filesPayload.images].filter(el => el)
-            
             const imagesMeta = fieldsPayload.images && Object
                 .keys(fieldsPayload.images)
                 .map(node_uuid => ({node_uuid, ...fieldsPayload.images[node_uuid]})) || []
-            
+
+
+
             const imagesPayload = filesImagesPayloadArray.map(file => {
                 const uri =  encodeURI(file.name)
 
@@ -192,10 +193,11 @@ const entitiesRepo = (conn) => {
                     collection, 
                     entity_uuid 
                 }}
-            } )
+            }).filter(image => image.meta.node_uuid)
             
             const images = imagesPayload && imagesPayload.length > 0 && await uploadImagesCommand2(imagesPayload) || []
             fieldsPayload.images && images.forEach((image) => {
+
                 fieldsPayload.images[image.node_uuid] = {...fieldsPayload.images[image.node_uuid], ...image}
             })
 
