@@ -71,6 +71,22 @@ findEntities(connection, collection).then((entities) => {
             slug = generateEntitySlug(title, entities.map(p => p.slug))
         }
 
+        const {images} = entity
+        if(images && payload.images) {
+            Object.keys(images).map(node_uuid => {
+                // if image file_uuid exists already then just take the current state 
+                if(payload.images[node_uuid]) {
+
+                    const image = images[node_uuid]
+                    if(image) {
+                        payload.images[node_uuid] = {...payload.images[node_uuid], ...image}
+                    }
+                    
+                }
+            })
+        }
+    
+
         const {content} = entity
         if(content && payload.content) {
             Object.keys(content).map(content_uuid => {
@@ -93,6 +109,12 @@ findEntities(connection, collection).then((entities) => {
         let statement = {'$set': { ...payload, slug }}
         if(!payload.content) {
             statement = {...statement, "$unset": {'content' : ''}}
+        }
+        if(!payload.images) {
+            statement = {...statement, "$unset": {'images' : ''}}
+        }
+        if(!payload.parameter) {
+            statement = {...statement, "$unset": {'parameter' : ''}}
         }
         //reject()
         connection(db => {
@@ -146,10 +168,11 @@ const findEntityImage = (connection) =>
         .collection(collection)
         .findOne({entity_uuid})
     
+        
         const image = result === null
         ? null
         : (result.images) 
-            ? result.images.find(i => i.file_uuid === file_uuid)
+            ? result.images[file_uuid]
             : null
     
         image ? resolve(image.pathes[format]) : resolve(null)
