@@ -1,6 +1,6 @@
 {
   "name": "@kiste/frontend-components",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "> TODO: description",
   "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
   "homepage": "kiste.io",
@@ -20,8 +20,6 @@
     "classnames": "^2.2.6"
   },
   "devDependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
     "@babel/core": "^7.13.10",
     "@open-wc/building-rollup": "^1.9.4",
     "@rollup/plugin-typescript": "^8.2.0",
@@ -35,6 +33,8 @@
     "babel-loader": "^8.2.2",
     "deepmerge": "^4.2.2",
     "mini-css-extract-plugin": "^1.3.9",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "rimraf": "^3.0.2",
     "sass": "^1.32.8",
     "sass-loader": "^10.0.1",
