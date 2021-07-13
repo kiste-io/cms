@@ -32,12 +32,12 @@ new Promise((resolve, reject) => connection(async (db) => {
 }))
 
 
-const generateEntitySlug = (name, existing_slugs, iteration=0) => {
+const generateSlug = (name, existing_slugs, iteration=0) => {
 
     const slug = name.toLocaleLowerCase().replace(/[^a-z0-9]/g, "")
 
     if(existing_slugs.includes(slug)){
-        return generateEntitySlug(`${name}${++iteration}`, existing_slugs, iteration)
+        return generateSlug(`${name}${++iteration}`, existing_slugs, iteration)
     }else{
         return slug
     }
@@ -68,7 +68,7 @@ findEntities(connection, collection).then((entities) => {
 
         let {slug} = entity
         if(!slug) {
-            slug = generateEntitySlug(title.en || title.de || 'entity', entities.map(p => p.slug))
+            slug = generateSlug(title.en || title.de || 'entity', entities.map(p => p.slug))
         }
 
         const {images} = entity
@@ -256,19 +256,32 @@ const findEntityCategories = (connection) =>
 
 
 const storeEntityCategory = (connection) =>
-    (collection, category_uuid, payload) => new Promise((resolve, reject) =>                     
-        connection(db => {
-            db.collection(categoryCollection(collection)).updateOne(
-                {category_uuid}, 
-                {$set: { ...payload }}, 
-                {upsert: true},
-                (err, result) => {
-                    if(err) reject(err)
-                    else resolve(result)
-                })
+     (collection, category_uuid, payload) => new Promise((resolve, reject) => {
+        findEntityCategories(connection)(collection).then(categories => {
 
-
-    }))
+            const {title } = payload
+            const category = categories.find(e => e.category_uuid === category_uuid) || {}
+    
+            let {slug} = category
+            if(!slug) {
+                slug = generateSlug(title.en || title.de || 'category', categories.map(p => p.slug))
+                payload = {...payload, slug}
+            }
+          
+            connection(db => {
+                db.collection(categoryCollection(collection)).updateOne(
+                    {category_uuid}, 
+                    {$set: { ...payload }}, 
+                    {upsert: true},
+                    (err, result) => {
+                        if(err) reject(err)
+                        else resolve(result)
+                    })
+                })  
+            })                    
+      
+})
+    
 
 const deleteEntityCategory = connection =>
     (collection, category_uuid) => new Promise((resolve, reject) => connection(db => {

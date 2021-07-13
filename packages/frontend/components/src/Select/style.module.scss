@@ -53,7 +53,7 @@
     &.small {
         > svg {
             font-size: 1rem;
-            top: calc(50% - 8px);
+            top: calc(50% - 7px);
             right: 10px;
 
         }
@@ -129,7 +129,7 @@
 
     &.small {
         label {
-            transform: translate(-8px, -1.3rem);
+            transform: translate(-8px, -22px);
         }
     }
 }
