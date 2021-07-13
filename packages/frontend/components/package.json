@@ -16,14 +16,12 @@
     "build:dev": "webpack --config webpack/dev.config.js --watch",
     "build": "webpack --config webpack/prod.config.js"
   },
-  "peerDependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
   "dependencies": {
     "classnames": "^2.2.6"
   },
   "devDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "@babel/core": "^7.13.10",
     "@open-wc/building-rollup": "^1.9.4",
     "@rollup/plugin-typescript": "^8.2.0",
