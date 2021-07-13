@@ -24,12 +24,14 @@ new Promise((resolve, reject) => connection(async (db) => {
 }))
 
 const findEntity = (connection, collection) => (query) => 
-new Promise((resolve, reject) => connection(async (db) => {
-    
-    const entity = await db.collection(collection).findOne(query, {_id: 0})
-    resolve(entity)
+    new Promise((resolve, reject) => connection(async (db) => {
+        
+        const entity = await db.collection(collection).findOne(query, {_id: 0})
+        resolve(entity)
 
-}))
+    }))
+
+
 
 
 const generateSlug = (name, existing_slugs, iteration=0) => {
@@ -253,7 +255,13 @@ const findEntityCategories = (connection) =>
             resolve(db.collection(categoryCollection(collection)).find().toArray()))
     })
         
+const findCategory = (connection, collection) => (query) => 
+    new Promise((resolve, reject) => connection(async (db) => {
+    
+        const entity = await db.collection(categoryCollection(collection)).findOne(query, {_id: 0})
+        resolve(entity)
 
+    }))
 
 const storeEntityCategory = (connection) =>
      (collection, category_uuid, payload) => new Promise((resolve, reject) => {
@@ -306,6 +314,7 @@ module.exports = {
     deleteEntityImage,
     reorderEntityImage,
     findEntityCategories,
+    findCategory,
     storeEntityCategory,
     deleteEntityCategory
 }

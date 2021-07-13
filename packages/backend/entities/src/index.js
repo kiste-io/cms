@@ -19,6 +19,7 @@ const {
     deleteEntityImage,
     storeEntityCategory,
     findEntityCategories,
+    findCategory,
     deleteEntityCategory
 } = require('./db')
 
@@ -89,19 +90,22 @@ const entitiesRepo = (conn) => {
         
     })
 
-     // entity categories
-     router.get("/entities/:collection/categories", async (req, res) => {
-        const {collection} = req.params
+ 
 
-        findEntityCategories(conn)(collection).then(result => {
+    router.get("/entities/:collection/categories/slug/:slug", async (req, res) => {
+        const {collection, slug} = req.params
+
+        findCategory(conn, collection)({slug}).then(result => {
             res.send(result)
         }).catch(() => {
             res.status(500)
             res.send()
         })
         
-        
+        findCategory
     })
+
+
      router.post("/entities/:collection/categories/:category_uuid", async (req, res) => {
         const {collection, category_uuid} = req.params
         const payload = req.body
@@ -110,6 +114,7 @@ const entitiesRepo = (conn) => {
         
         res.send()
     })
+
 
     router.get("/entities/:collection/categories/:category_uuid/enities", async (req, res) => {
         const {collection, category_uuid} = req.params
@@ -145,7 +150,15 @@ const entitiesRepo = (conn) => {
         
     })
 
-    
+    router.get("/entities/:collection/slug/:slug", async (req, res) => {
+
+        const {collection, slug} = req.params;
+
+        findEntity(conn, collection)({slug}).then((result) => {
+            res.send(formatEntitesResponse(result || {}))
+        })
+    })
+
 
     router.get("/entities/:collection/:entity_uuid", async (req, res) => {
 
@@ -156,6 +169,7 @@ const entitiesRepo = (conn) => {
         })
     })
 
+    
     router.delete("/entities/:collection/:entity_uuid", async (req, res) => {
 
         const {collection, entity_uuid} = req.params;
