@@ -12,8 +12,13 @@
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "formidable": "^1.2.2",
+    "sharp": "^0.28.3"
+  },
   "peerDependencies": {
-    "express": "^4.17.1",
-    "formidable": "^1.2.2"
-  }
+    "express": "^4.17.1"
+  },
+  "gitHead": "8da4c3972481cf0f286246533abdbc461d7ace3a"
 }
