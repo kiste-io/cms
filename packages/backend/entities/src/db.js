@@ -59,7 +59,25 @@ const deleteEntity = (connection) =>
                     })
             }))
 
+const reorderEntities = (connection, collection) => (list) => new Promise((resolve, reject) => {
+    try {
 
+        connection(db => {
+            db.collection(collection).bulkWrite(list.map(e => ( { updateOne : {
+                "filter" : { "entity_uuid" : e.entity_uuid },
+                "update" : { $set : { "order" : e.order } }
+            } }))).then(() => resolve())
+            
+        })
+
+
+
+    } catch (e) {
+
+        reject(e);
+
+    }
+})
 
 
 const updateEntityData = (connection, collection) => (entity_uuid, payload) => new Promise((resolve, reject) => 
@@ -314,6 +332,7 @@ module.exports = {
     deleteEntityImage,
     reorderEntityImage,
     findEntityCategories,
+    reorderEntities,
     findCategory,
     storeEntityCategory,
     deleteEntityCategory

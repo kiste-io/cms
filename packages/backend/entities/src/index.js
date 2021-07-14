@@ -19,6 +19,7 @@ const {
     deleteEntityImage,
     storeEntityCategory,
     findEntityCategories,
+    reorderEntities,
     findCategory,
     deleteEntityCategory
 } = require('./db')
@@ -103,6 +104,15 @@ const entitiesRepo = (conn) => {
         })
         
         findCategory
+    })
+
+    router.post("/entities/:collection/reorder", async (req, res) => {
+        const {collection} = req.params
+        const {list} = req.body
+
+        await reorderEntities(conn, collection)(list)
+        
+        res.send()
     })
 
 
