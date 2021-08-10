@@ -1,5 +1,16 @@
 @import 'variables';
 
+@keyframes buttomUp {
+    0%{
+        opacity: 0;
+        transform: translateY(100px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0px);
+    }
+}
+
 .Alert {
 
     font-family: $font-family-text;
@@ -7,11 +18,18 @@
     font-size: 1rem;
     padding: $padding-medium-medium;
     border-radius: $radius-default;
-    
+    position:fixed;
     transition: opacity .3s;
 
     &.hide {
         opacity: 0;
+    }
+
+    &.buttomUp {
+        animation: buttomUp .5s ease-out;
+        bottom: 10px;
+
+        right: 10px;
     }
 
     &.error {

@@ -7,7 +7,7 @@ import style from './style.module.scss';
 const cx = classnames.bind(style)
 
 
-export const Alert = ({message, type, duration, ...props}) => {
+export const Alert = ({message, type, duration, buttomUp, ...props}) => {
 
     const [hide, setHide] = useState(false)
     const [unmount, setUnmount] = useState(false)
@@ -29,7 +29,7 @@ export const Alert = ({message, type, duration, ...props}) => {
     }, [duration, hide])
 
     return !unmount
-    ? <div className={cx('Alert', type, {hide})}>
+    ? <div className={cx('Alert', type, {hide, buttomUp})}>
         {message}
      </div>
     : null
@@ -42,7 +42,8 @@ Alert.propTypes = {
     message: PropTypes.string.isRequired,
     type:  PropTypes.oneOf(['success', 'error', 'info']),
     duration: PropTypes.number,
-    onClose: PropTypes.func
+    onClose: PropTypes.func,
+    buttomUp: PropTypes.bool
 
   };
   

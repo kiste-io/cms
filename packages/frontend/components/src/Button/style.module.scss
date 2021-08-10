@@ -3,18 +3,21 @@
 .Button {
 
     display: flex;
-    align-self: center;
+    align-items: center;
     
-    font-family: $font-family-text;
-    font-weight: 700;
     border: 0;
     border-radius: 3em;
     cursor: pointer;
-    display: inline-block;
-    line-height: 1;
-    transition: all .2s;
+    width: fit-content;
+    transition: all .2s;   
 
-   
+  > span {
+    font-family: $font-family-text;
+    font-weight: 700;
+    line-height: 1;
+
+
+  }
 
   &.primary {
     color: white;
@@ -51,10 +54,17 @@
   &.medium {
     font-size: 14px;
     padding: $padding-medium;
+
+    > span + svg {
+      height: 14px;
+    }
   }
   &.large {
     font-size: 16px;
     padding: 12px 24px;
+    > span + svg {
+      height: 16px;
+    }
   }
 
   &:focus {

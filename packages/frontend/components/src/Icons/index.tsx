@@ -8,6 +8,8 @@ import Link  from './Link';
 import Italic  from './Italic';
 import Bold  from './Bold';
 import Underline  from './Underline';
+import Loading from './Loading';
+import Back from './Back';
 
 export type SVGIcon = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> &
@@ -25,4 +27,6 @@ export const Icon = {
   Italic,
   Bold,
   Underline,
+  Loading,
+  Back
 };

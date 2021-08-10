@@ -13,9 +13,10 @@ const cx = classnames.bind(style);
 export const Button = ({ primary = false, size = 'medium', label = null, icon = null, disabled = false, as = 'button', ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
+  
   return React.createElement(as, 
     { className: cx('Button', size, mode, {icon, disabled}), ...props },
-    icon ? icon : label)
+    [label && <span>{label}</span>, icon])
   }
 
 
