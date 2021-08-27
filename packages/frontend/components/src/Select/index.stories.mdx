@@ -22,14 +22,14 @@ import {useState, useEffect} from 'react'
         {() => {
         const [state, set] = useState({defaultValue: '1', options: []})
         const [value, setValue] = useState(null)
-        useEffect(() => set({defaultValue: '2', options: [{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}), [])
+        useEffect(() => set({defaultValue: '2', options: [{value: '1', label:'one'}, {value: '2', label:'twotwotwotwotwotwotwotwo'},{value: '3', label:'three'}]}), [])
         
         return <>
         <div>Selected Value: {value}</div>
         <Select 
             label='Select Number' 
             name='name' 
-            onChange={(value) => setValue(value)}
+            onChange={({value}) => setValue(value)}
             defaultValue={state.defaultValue}
             options={state.options}/></>
         }}        
@@ -47,6 +47,22 @@ import {useState, useEffect} from 'react'
             name='name' 
             small
             options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}/></>
+        }}        
+    </Story>
+</Canvas>
+
+
+<Canvas>
+    <Story name="select button">
+        {() => {
+        
+        return <>
+        <Select 
+            name='name'    
+            defaultValue={'1'}         
+            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}>
+                <button>add</button>
+            </Select></>
         }}        
     </Story>
 </Canvas>

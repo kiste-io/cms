@@ -1,3 +1,4 @@
+import Add from './Add';
 import Arrowdown from './Arrowdown';
 import Check from './Check';
 import Identity from './Identity';
@@ -18,6 +19,7 @@ export type SVGIcon = React.ForwardRefExoticComponent<
 
 export const Icon = {
   Arrowdown,
+  Add,
   Check,
   Identity,
   Info,

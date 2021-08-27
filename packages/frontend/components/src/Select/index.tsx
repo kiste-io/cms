@@ -4,6 +4,7 @@ import classnames from 'classnames/bind';
 import style from './style.module.scss';
 import SelectContext, {useSelectContext} from './state';
 import Portal from '../Portal';
+import { Icon } from '../Icons';
 const cx = classnames.bind(style)
 
 
@@ -51,12 +52,14 @@ const SelectMenu = () => {
 }
 
 const SelectValue = ({value, options}) => value && options.find(o => o.value === value)
-    ? <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
+    ? <>
+        <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
+    </>
     : null 
     
 
 
-const SelectNode = () => {
+const SelectNode = ({children}) => {
     const ref = useRef()
     const [{listed, name, defaultValue, value, id, label, options, small}, dispatch] = useSelectContext()
 
@@ -69,24 +72,27 @@ const SelectNode = () => {
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
 
-    return <div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small})} onClick={handlClick}>
-            <label htmlFor={id}>{label}</label>
+    return <div className={cx('SelectContainer')}><div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children})} onClick={handlClick}>
+            {label && <label htmlFor={id}>{label}</label>}
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
             
-            <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"></path></svg>
+            <Icon.Arrowdown />
             
             <select name={name} value={existingSelectedValue} id={id}>
                 <option value=""></option>
                 {options.map((o, i) =><option key={`${o.value}_${i}`} value={o.value}>{o.label}</option>)}
             </select>
         </div>
+        {children && <span className={cx('right_children')}>{children}</span>}
+        </div>
+
 
 }
 
-export const Select = (props) => (
+export const Select = ({children, ...props}) => (
     <SelectContext {...props}>
-        <SelectNode />
+        <SelectNode>{children}</SelectNode>
     </SelectContext>
 )
 
@@ -97,6 +103,7 @@ Select.propTypes = {
     defaultValue: PropTypes.string,
     label: PropTypes.string.isRequired,
     onChange: PropTypes.func,
+    children: PropTypes.func
 };
   
 Select.defaultProps = {

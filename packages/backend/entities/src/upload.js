@@ -28,20 +28,20 @@ const resize = async (dist, file) => {
     
     return Promise.all([
 
-        resizeCover(file.path, `${dist}/200x200_${filename}`, 240, true).then(dist_file => ({'200x200': dist_file})),
+        resizeCover(file.path, `${dist}/200x200_${filename}`, 300, true).then(dist_file => ({'200x200': dist_file})),
 
         sharp(file.path)
-            .resize({width: 600, height:400, position: sharp.strategy.entropy})
+            .resize({width: 700, height:700, position: sharp.strategy.entropy})
             .toFormat('jpeg')
             .toFile(`${dist}/600_${filename}`)
             .then(_ => ({'600': `${dist}/600_${filename}`})),
 
         sharp(file.path)
-            .resize({height: 1000, width: 1000, withoutEnlargement: true})
+            .resize(1000, 1000, {fit: sharp.fit.inside, withoutEnlargement: true})
             .toFormat('jpeg')
             .toFile(`${dist}/1000_${filename}`)
-            .then(_ => ({'1000': `${dist}/1000_${filename}`}))
-        
+            .then(_ => ({'1000': `${dist}/1000_${filename}`})),
+
         
         ]).then(([x1, x2, x3]) => ({...x1, ...x2, ...x3}))                    
 }
