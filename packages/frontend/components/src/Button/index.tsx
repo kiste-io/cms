@@ -10,13 +10,13 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary = false, size = 'medium', label = null, icon = null, disabled = false, as = 'button', ...props }) => {
+export const Button = ({ primary = false, variant = null, size = 'medium', label = null, icon = null, disabled = false, as = 'button', children, ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
   
   return React.createElement(as, 
-    { className: cx('Button', size, mode, {icon, disabled}), ...props },
-    [label && <span>{label}</span>, icon])
+    { className: cx('Button', size, mode, {icon, disabled, badge: variant === 'badge'}), ...props },
+    [label && <span>{label}</span>, icon, children])
   }
 
 
@@ -36,7 +36,7 @@ export const ButtonGroup = ({children}) => <div className={cx('ButtonGroup')}>{c
 
 
 
-export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon}) => {
+export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon, children}) => {
 
     const [upload, setUpload] = useState(false)
 
@@ -47,7 +47,7 @@ export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, 
 
     return (<div >
         <label htmlFor={id}>            
-            <Button icon={icon} label={label} as='span' onClick={() => setUpload(true)} />        
+            <Button icon={icon} label={label} as='span' onClick={() => setUpload(true)}>{children}</Button>        
         </label>
         {upload && <input
               name={name}

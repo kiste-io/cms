@@ -1,5 +1,5 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs/blocks';
-import {Select} from '.'
+import {Select, Datalist} from '.'
 import {useState, useEffect} from 'react'
 
 <Meta title="Components / Select" />
@@ -62,6 +62,21 @@ import {useState, useEffect} from 'react'
             defaultValue={'1'}         
             options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}>
                 <button>add</button>
+            </Select></>
+        }}        
+    </Story>
+</Canvas>
+
+<Canvas>
+    <Story name="Datalist input">
+        {() => {
+        
+        return <>
+        <Select
+            input 
+            inputValue='new_input_value'
+            name='name'    
+            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}>
             </Select></>
         }}        
     </Story>

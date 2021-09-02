@@ -7,13 +7,15 @@
   "license": "MIT",
   "main": "src/index.js",
   "bin": {
-    "hashpassword": "./src/crypt/clipassword.js"
+    "hashpassword": "./src/crypt/clipassword.js",
+    "adduser": "./src/adduser.js"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
     "hashpassword": "hashpassword"
   },
   "dependencies": {
+    "@kiste/backend-mongo-connector": "^0.0.12",
     "bcrypt": "^5.0.1",
     "dotenv": "^10.0.0",
     "oauth2-server": "^3.1.1"

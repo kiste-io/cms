@@ -8,6 +8,23 @@ import { Icon } from '../Icons';
 const cx = classnames.bind(style)
 
 
+const InputValue = () => {
+    const [{input, options, value}, dispatch] = useSelectContext()
+
+    const label = (options.find(o => o.value === value) || {}).label
+
+    const filterOptions = (label) => {
+        const filtered = options.filter(o => o.label.toLowerCase().indexOf(label.toLowerCase()) === -1)
+        console.log('filtered', filtered)
+        dispatch({type: 'HIDE_OPTIONS', options: filtered, label})
+    }
+
+    return input
+    ? <input defaultValue={label} onChange={e => filterOptions(e.target.value)}/>
+    : null
+}
+
+
 const SelectMenu = () => {
 
     const [ref, setRef] = useState(null)
@@ -41,9 +58,13 @@ const SelectMenu = () => {
     ? [existingCurrentValue, ...options.filter(o => o.value !== existingCurrentValue.value)]
     : options
 
+    const visibleOptions = sortedOptions.filter(o => !o.hidden)
+
     return listed ? <Portal>
-        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu', {small})} style={{top, left, width}}><ul>{
-            sortedOptions.map((o, i) => {
+        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu', {small})} style={{top, left, width}}>
+            <InputValue />
+            <ul>{
+            visibleOptions.map((o, i) => {
                 return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value} data-label={o.label}>{o.label}</li>
             })
         }</ul></div>
@@ -51,11 +72,15 @@ const SelectMenu = () => {
     : null
 }
 
-const SelectValue = ({value, options}) => value && options.find(o => o.value === value)
+const SelectValue = ({value, options}) =>  {
+
+    console.log('select value', value, options)
+    return value && options.find(o => o.value === value)
     ? <>
         <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
     </>
     : null 
+}
     
 
 
@@ -98,12 +123,15 @@ export const Select = ({children, ...props}) => (
 
 
 
+
 Select.propTypes = {    
     name: PropTypes.string.isRequired,
     defaultValue: PropTypes.string,
     label: PropTypes.string.isRequired,
     onChange: PropTypes.func,
-    children: PropTypes.func
+    children: PropTypes.func,
+    input: PropTypes.bool,
+    inputId: PropTypes.string,
 };
   
 Select.defaultProps = {

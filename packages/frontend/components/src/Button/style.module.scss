@@ -46,9 +46,11 @@
   }
   &.small {
     font-size: 12px;
-    padding: 10px 16px;   
-    &.icon {
-      padding: 5px 7px;   
+    
+    svg {
+      width: 16px;
+      height: 16px;
+      padding: 4px;   
     }
   }
   &.medium {
@@ -64,6 +66,23 @@
     padding: 12px 24px;
     > span + svg {
       height: 16px;
+    }
+  }
+
+  &.badge {
+    padding: 0;
+    > span {
+      padding: 10px 10px 10px 16px;      
+    }
+
+    > span + svg {
+      background: $color-primary;
+      border-bottom-right-radius: 16px;
+      border-top-right-radius: 16px;
+      color: white;
+      
+      height: 22px;
+      padding: 6px;
     }
   }
 

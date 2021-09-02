@@ -45,6 +45,7 @@ Input.propTypes = {
     defaultValue: PropTypes.string,
     label: PropTypes.string.isRequired,
     onChange: PropTypes.func,
+    list: PropTypes.string
 
   };
   

@@ -68,18 +68,18 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   return (<div className={cx('EditorActionsMenu')} onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
     {!link.mode 
     ?<ButtonGroup>
-        <Button size="small" icon={<Icon.Link height="18" width="18" />} onClick={startLinking} />
+        <Button size="small" onClick={startLinking}><Icon.Link height="18" width="18" /></Button>
 
-        <Button size="small" icon={<Icon.Italic height="18" width="18" />} onClick={setItalic} />
+        <Button size="small"  onClick={setItalic} ><Icon.Italic height="18" width="18" /></Button>
 
-        <Button size="small" icon={<Icon.Bold height="18" width="18" />}  onClick={setBold} />
+        <Button size="small"   onClick={setBold} ><Icon.Bold height="18" width="18" /></Button>
 
-        <Button size="small" icon={<Icon.Underline height="18" width="18"/>}  onClick={setUnderline} />
+        <Button size="small" onClick={setUnderline}><Icon.Underline height="18" width="18"/></Button>
 
       </ButtonGroup>
     : <ButtonGroup>
         <input name="link" id="link" onChange={e => setLink({...link, url: e.target.value})} placeholder="https://" />
-        <Button as="span" size="small" label="ok" onClick={injectLink} />
+        <Button as="span" size="small"  onClick={injectLink}>ok</Button>
       </ButtonGroup>
     }
   </div>)
