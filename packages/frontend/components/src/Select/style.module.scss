@@ -1,3 +1,4 @@
+@use "sass:math";
 @import 'variables';
 
 .Select {
@@ -150,6 +151,41 @@
     border-radius: 4px;
     overflow: hidden;
     font-size: 14px;
+
+    > span {
+        position: relative;
+           
+        >input {
+            padding: $padding-large;
+            font-family: $font-family-text;
+            font-weight: 500;
+            cursor: pointer;
+            line-height: 1.3rem;
+            transition: all .1s ease-in;
+            width: calc(100% - #{2 * $padding-large});
+            border: 0;
+            outline: 0;
+          
+           
+            &:focus-visible {
+                
+            }
+        }
+
+        box-shadow: rgb(0 0 0 / 15%) 0px 0px 0px 1px inset;
+
+        &:after {
+            display: block;
+            content: '';
+            width: 100%;
+            position: absolute;
+            height: 2px;
+            background: $color-primary;
+        }
+    
+    }
+    
+    
 
     ul {
         list-style: none;

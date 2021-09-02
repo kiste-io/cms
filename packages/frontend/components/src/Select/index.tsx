@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
 import style from './style.module.scss';
@@ -9,6 +9,8 @@ const cx = classnames.bind(style)
 
 
 const InputValue = () => {
+
+    const ref = useRef()
     const [{input, options, value}, dispatch] = useSelectContext()
 
     const label = (options.find(o => o.value === value) || {}).label
@@ -19,8 +21,14 @@ const InputValue = () => {
         dispatch({type: 'HIDE_OPTIONS', options: filtered, label})
     }
 
+    useEffect(() => {
+        if(ref.current) {
+            (ref.current as any).focus()
+        }
+    }, [ref.current])
+
     return input
-    ? <input defaultValue={label} onChange={e => filterOptions(e.target.value)}/>
+    ? <span tabIndex={0}><input defaultValue={label} ref={ref} onChange={e => filterOptions(e.target.value)}/></span>
     : null
 }
 
@@ -86,7 +94,7 @@ const SelectValue = ({value, options}) =>  {
 
 const SelectNode = ({children}) => {
     const ref = useRef()
-    const [{listed, name, defaultValue, value, id, label, options, small}, dispatch] = useSelectContext()
+    const [{input, listed, name, defaultValue, value, id, label, options, small}, dispatch] = useSelectContext()
 
     const handlClick = () => {
         const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
@@ -97,7 +105,7 @@ const SelectNode = ({children}) => {
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
 
-    return <div className={cx('SelectContainer')}><div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children})} onClick={handlClick}>
+    return <div className={cx('SelectContainer')}><div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children, input})} onClick={handlClick}>
             {label && <label htmlFor={id}>{label}</label>}
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
@@ -131,7 +139,7 @@ Select.propTypes = {
     onChange: PropTypes.func,
     children: PropTypes.func,
     input: PropTypes.bool,
-    inputId: PropTypes.string,
+    inputValue: PropTypes.string,
 };
   
 Select.defaultProps = {

@@ -43,8 +43,16 @@ const selectReducer = (state, action) => {
         case `${prefix}_LIST`:
             return {...state, listed: true, rect: action.payload.rect, }
         case `${prefix}_COLLAPSE`:
-            const c_value = (state.options.find(o => o.temp) || {}).value || state.value
-            const c_options = state.options.map(o => ({...o, hidden: false}))
+            const temp = state.options.find(o => o.temp)
+            let c_value = state.value;
+            if(temp && temp.label === "") {
+                c_value = null
+            }else if (temp && temp.label !== "") {
+                c_value = temp.value
+            }
+            
+            
+            const c_options = state.options.filter(o => !(o.temp && o.label === "")).map(o => ({...o, hidden: false}))
             return {...state, listed: false, options: c_options, value: c_value}
         
         case `${prefix}_SELECT`:           
