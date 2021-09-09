@@ -18,14 +18,16 @@
     font-size: 1rem;
     padding: $padding-medium-medium;
     border-radius: $radius-default;
-    position:fixed;
     transition: opacity .3s;
+    width: fit-content;
 
     &.hide {
         opacity: 0;
     }
 
     &.buttomUp {
+        position:fixed;
+
         animation: buttomUp .5s ease-out;
         bottom: 10px;
 

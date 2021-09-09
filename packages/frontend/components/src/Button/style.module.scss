@@ -46,7 +46,9 @@
   }
   &.small {
     font-size: 12px;
-    
+    > span {
+      padding: $padding-small;
+    }
     svg {
       width: 16px;
       height: 16px;
@@ -55,17 +57,33 @@
   }
   &.medium {
     font-size: 14px;
-    padding: $padding-medium;
+    > span {
+      padding: $padding-medium;
+    }
+    
 
     > span + svg {
       height: 14px;
     }
+    svg {
+      width: 24px;
+      height: 24px;
+      padding: 8px;   
+    }
   }
   &.large {
     font-size: 16px;
-    padding: 12px 24px;
+    > span {
+      padding: $padding-large-large;
+    }
+    
     > span + svg {
       height: 16px;
+    }
+    svg {
+      width: 32px;
+      height: 32px;
+      padding: 12px;   
     }
   }
 

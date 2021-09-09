@@ -111,8 +111,8 @@ const SelectNode = ({children}) => {
             <SelectMenu />
             
             <Icon.Arrowdown />
-            
-            <select name={name} value={existingSelectedValue} id={id}>
+            {input && <input type='hidden' name={`${name}[label]`} value={(options as Array<any>).find(o => o.value === value)?.label}/> }
+            <select name={`${name}${input ? '[value]' : ''}`} value={existingSelectedValue} id={id}>
                 <option value=""></option>
                 {options.map((o, i) =><option key={`${o.value}_${i}`} value={o.value}>{o.label}</option>)}
             </select>

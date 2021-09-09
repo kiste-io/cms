@@ -7,7 +7,9 @@
         min-height: 5rem;
         overflow-y: scroll;
         padding: .3rem;
-        border: 1px solid $color-default-50;
+        border: none;
+        box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px inset;
+        padding: $padding-large;
         border-radius: $border-radius-s;
         &:focus-visible {
             outline-color: $color-primary;

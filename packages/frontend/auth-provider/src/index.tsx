@@ -38,7 +38,7 @@ export const fetchRefreshToken = (TOKEN_ENDPOINT, refresh_token) => new Promise(
 })
 
 
-const authContext = createContext();
+const authContext = createContext({});
 
 const authFlag = {
   isAuthenticated: false,

@@ -13,9 +13,11 @@
     "lib"
   ],
   "scripts": {
-    "build-lib": "webpack"
+    "build:dev": "webpack  --watch",
+    "build": "webpack"
   },
   "devDependencies": {
+    "@types/react": "^17.0.20",
     "ts-loader": "^8.0.18",
     "webpack-cli": "^4.5.0"
   }

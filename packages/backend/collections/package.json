@@ -1,0 +1,35 @@
+{
+  "name": "@kiste/backend-collections",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
+  "homepage": "https://github.com/kiste-io/cms#readme",
+  "license": "MIT",
+  "files": [
+    "src",
+    "express"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiste-io/cms.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/kiste-io/cms/issues"
+  },
+  "peerDependencies": {
+    "express": "^4.17.1"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "formidable": "^1.2.2",
+    "rxjs": "^7.3.0",
+    "sharp": "^0.29.0",
+    "uuid4": "^2.0.2"
+  }
+}

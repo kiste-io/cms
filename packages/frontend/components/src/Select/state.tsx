@@ -89,7 +89,7 @@ const init = ({name, options, ...rest}) => ({
     listed: false})
 
 
-const optionsNotEqual = (options1, options2) => {
+const optionsNotEqual = (options1=[], options2=[]) => {
     const options1Values = options1.map(o => o.value)
     const options2Values = options2.map(o => o.value)
    

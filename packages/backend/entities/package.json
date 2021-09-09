@@ -7,7 +7,8 @@
   "license": "MIT",
   "main": "src/index.js",
   "files": [
-    "src"
+    "src",
+    "express"
   ],
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1"
