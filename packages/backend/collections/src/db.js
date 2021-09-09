@@ -309,7 +309,22 @@ const storeEntityCategory = (connection) =>
             })                    
       
 })
-    
+
+const updateCollectionCategory = (connection, collection, {category_uuid, label}) =>
+    new Promise((resolve, reject) => connection(db => {
+        console.log('category', {category_uuid, label})
+
+        try {
+            db.collection(categoryCollection(collection))
+            .updateOne({ category_uuid },
+                { $set : { label }},
+                {upsert: true}
+            ).then(resolve)
+        
+        } catch (e) {
+            reject(e)
+        }        
+    }))
 
 const deleteEntityCategory = connection =>
     (collection, category_uuid) => new Promise((resolve, reject) => connection(db => {
@@ -325,7 +340,8 @@ const deleteEntityCategory = connection =>
 const updateCollectionParameters = (connection, collection, parameters) => 
     new Promise((resolve, reject) => connection(db => {
 
-        console.log('parameters', parameters)
+        if(parameters.length == 0) resolve()
+        
         try {
             db.collection(parametersCollection(collection))
             .bulkWrite(parameters.map(p => ( { updateOne : {
@@ -371,6 +387,7 @@ module.exports = {
     findCategory,
     storeEntityCategory,
     deleteEntityCategory,
+    updateCollectionCategory,
     updateCollectionParameters,
     findCollectionParameters
 }

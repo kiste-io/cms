@@ -38,7 +38,6 @@ export const useSelectContext = () => useContext(SelectContext)
 const selectReducer = (state, action) => {
     
     const prefix = state.name.toUpperCase()
-    console.log(state, action)
     switch(action.type) {
         case `${prefix}_LIST`:
             return {...state, listed: true, rect: action.payload.rect, }

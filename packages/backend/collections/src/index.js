@@ -4,7 +4,8 @@ const {map, tap, mergeMap, reduce, scan, catchError, take} = require('rxjs/opera
 const {
     updateEntityData,
     updateCollectionParameters,
-    findCollectionParameters
+    findCollectionParameters,
+    updateCollectionCategory
 } = require('./db')
 
 const {fieldsToJSON} = require('./utils')
@@ -29,11 +30,29 @@ const ensureCollectionParameters = (connection, collection, {parameters}) =>
         const s_paramters = Object.keys(parameters).map(order => {
             const {label, value} = parameters[order].key
             return {parameter_uuid: value, label, order, value: parameters[order].value }
-        })
+        }).filter(({value, label}) => value && label)
 
     
         updateCollectionParameters(connection, collection, s_paramters)
             .then(() => resolve(s_paramters))
+            .catch(reject)
+
+    })
+
+/*** CATEGORY */
+
+const ensureCollectionCategory = (connection, collection, {category}) => 
+    new Promise((resolve, reject) => {
+    
+        if(!category) resolve()
+      
+        const {label, value} = category
+        
+        if(!label || label.length === 0) resolve() 
+    
+        const s_category = {category_uuid: value, label}
+        updateCollectionCategory(connection, collection, s_category)
+            .then(() => resolve(s_category))
             .catch(reject)
 
     })
@@ -47,7 +66,11 @@ const updateEntity = async(connection, {collection, entity_uuid, fields, files})
 
     const source$ = of(true).pipe(
         mergeMap(_ => from(ensureCollectionParameters(connection, collection, fieldsPayload))),
-        mergeMap(parameters => updateEntityData(connection, collection)(entity_uuid, {...fieldsPayload, parameters}, titleForSlug)),
+        mergeMap(_ => zip(of(_), from(ensureCollectionCategory(connection, collection, fieldsPayload)))),
+        mergeMap(([parameters, category]) => {
+            console.log('[parameters, category]', [parameters, category])
+            return updateEntityData(connection, collection)(entity_uuid, {...fieldsPayload, parameters, category}, titleForSlug)
+        }),
         tap(payload => console.log('tap', payload)),
         
     );

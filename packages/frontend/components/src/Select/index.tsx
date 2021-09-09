@@ -17,7 +17,6 @@ const InputValue = () => {
 
     const filterOptions = (label) => {
         const filtered = options.filter(o => o.label.toLowerCase().indexOf(label.toLowerCase()) === -1)
-        console.log('filtered', filtered)
         dispatch({type: 'HIDE_OPTIONS', options: filtered, label})
     }
 
@@ -82,7 +81,6 @@ const SelectMenu = () => {
 
 const SelectValue = ({value, options}) =>  {
 
-    console.log('select value', value, options)
     return value && options.find(o => o.value === value)
     ? <>
         <span className={cx('selectValue')}>{options.find(o => o.value === value)?.label}</span>
@@ -104,14 +102,15 @@ const SelectNode = ({children}) => {
     
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
+    const existingSelectedLabel = options.find(o => o.value === existingSelectedValue)?.label || ''
 
-    return <div className={cx('SelectContainer')}><div ref={ref} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children, input})} onClick={handlClick}>
+    return <div className={cx('SelectContainer')}><div ref={ref}  tabIndex={0} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children, input})} onClick={handlClick}>
             {label && <label htmlFor={id}>{label}</label>}
             {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
             <SelectMenu />
             
             <Icon.Arrowdown />
-            {input && <input type='hidden' name={`${name}[label]`} value={(options as Array<any>).find(o => o.value === value)?.label}/> }
+            {input && <input type='hidden' name={`${name}[label]`} key={existingSelectedLabel}  id={`input-${id}`}  value={existingSelectedLabel}/> }
             <select name={`${name}${input ? '[value]' : ''}`} value={existingSelectedValue} id={id}>
                 <option value=""></option>
                 {options.map((o, i) =><option key={`${o.value}_${i}`} value={o.value}>{o.label}</option>)}

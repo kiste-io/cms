@@ -136,12 +136,16 @@ export const Editor = ({name, html = '', debug = false}) => {
   const onInput = (e) => {
     setEditorInnerHTML((e.target as HTMLDivElement).innerHTML)
   }
+
+  useEffect(() => {
+    setEditorInnerHTML(html)
+  }, [html])
  
   const ContentEditor = useMemo(() => 
-    <div ref={contentRef} 
+    <div tabIndex={0} ref={contentRef} 
         contentEditable 
         onInput={onInput} 
-        dangerouslySetInnerHTML={{__html: html}} />, [])
+        dangerouslySetInnerHTML={{__html: html}} />, [html])
  
 
   return <>    
