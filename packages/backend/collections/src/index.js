@@ -8,7 +8,41 @@ const {
     updateCollectionCategory
 } = require('./db')
 
+const {
+    uploadFiles
+} = require('./upload')
+
 const {fieldsToJSON} = require('./utils')
+
+/** CONFIG */
+
+const config = {
+    collections: null,
+
+    getEntity: function (collection) {
+        return this.collections.entities.find(e => e.id ===  collection)
+    },
+
+    getEntityEditConfig: function (collection, edit) {
+        const entityCollection = this.getEntity(collection)
+        return entityCollection?.edit?.find(c => c.id === edit) || null
+    },
+
+    getEntityUploadEditConfig: function (collection) {
+        const entityCollection = this.getEntity(collection)
+        
+        return entityCollection?.edit?.filter(e => e.component === 'upload')
+    },
+    getEntityEditConfigAssetTypes: function (collection, edit) {
+        const entityCollection = this.getEntity(collection)
+        const editTuple = entityCollection?.edit?.find(c => c.id === edit) || {assets: []}
+        console.log('editTuple', editTuple)
+        return editTuple.assets.map(a => ({...a, edit_id: editTuple.id}))
+    },
+}
+const applyCollectionsConfig = (c) => config.collections = c
+
+
 
 /*** PARAMETERS */
 
@@ -57,19 +91,54 @@ const ensureCollectionCategory = (connection, collection, {category}) =>
 
     })
 
+const ensureAttributes = async (connection, collection, fieldsPayload) => {
+    const source$ = of(true).pipe(
+        mergeMap(_ => from(ensureCollectionParameters(connection, collection, fieldsPayload))),
+        mergeMap(_ => zip(of(_), from(ensureCollectionCategory(connection, collection, fieldsPayload)))),
+        map(([parameters, category]) => ({parameters, category})),
+        tap(payload => console.log('tap', payload)),
+        
+    );
+    
+
+    return await lastValueFrom(source$)
+}
+
+/** FILTER */
+const matchFieldsToFiles = (collection, fieldsPayload) => {
+
+    const uploadEditIds = config
+        .getEntityUploadEditConfig(collection)
+        .map(e => e.id)
+
+    
+    const fields = Object.keys(fieldsPayload)
+        .filter(f => {
+            console.log('f', f, !uploadEditIds.includes(f))
+            return   !uploadEditIds.includes(f)
+        })
+        .reduce((acc, f) => ({...acc, [f]: fieldsPayload[f]}), {})
+
+    
+    return fields
+
+}
+
+
 /*** ENTITY */
 const updateEntity = async(connection, {collection, entity_uuid, fields, files}) => {
     const fieldsPayload =  fieldsToJSON(fields)       
     const filesPayload = fieldsToJSON(files)  
-
+    console.log('fieldsPayload', fieldsPayload)
     const titleForSlug = fieldsPayload?.title?.en || fieldsPayload?.title?.de || "entity"
 
     const source$ = of(true).pipe(
-        mergeMap(_ => from(ensureCollectionParameters(connection, collection, fieldsPayload))),
-        mergeMap(_ => zip(of(_), from(ensureCollectionCategory(connection, collection, fieldsPayload)))),
-        mergeMap(([parameters, category]) => {
-            console.log('[parameters, category]', [parameters, category])
-            return updateEntityData(connection, collection)(entity_uuid, {...fieldsPayload, parameters, category}, titleForSlug)
+        mergeMap(_ => from(ensureAttributes(connection, collection, fieldsPayload))),
+        mergeMap(_ => zip(of(_), from(uploadFiles(collection, entity_uuid, fieldsPayload, filesPayload, config)))),
+        mergeMap(([attributes, uploads]) => {
+            const fields = matchFieldsToFiles(collection, fieldsPayload)
+            console.log('[attributes, fields, uploads]', [attributes, fields, uploads])
+            return updateEntityData(connection, collection)(entity_uuid, {...fields, ...attributes, ...uploads}, titleForSlug)
         }),
         tap(payload => console.log('tap', payload)),
         
@@ -156,6 +225,8 @@ const appendContentFiles = async (fieldsPayload, filesPayload, meta) => {
 
 
 module.exports = {
+    applyCollectionsConfig,
+    config,
     updateEntity,
     findEntityParameters
 }

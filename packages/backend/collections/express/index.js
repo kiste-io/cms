@@ -13,8 +13,7 @@ const {
     findEntity,
     deleteEntity,
     storeEntityImages,
-    findEntityImage,
-    findEntityContentImage,
+    findEntityAsset,
     reorderEntityImage,
     deleteEntityImage,
     storeEntityCategory,
@@ -27,14 +26,16 @@ const {
 
 const {
     updateEntity,
-    findEntityParameters
+    findEntityParameters,
+    config
 } = require('../src');
 
 const {
     uploadImagesCommand,
     uploadImagesCommand2
 
-} = require('../src/upload')
+} = require('../src/upload');
+const { type } = require('os');
 
 
 function sleep(ms) {
@@ -63,10 +64,7 @@ const formatEntitesResponse = ({images, content, parameter, ...rest}) => {
     return responseData
 }
 
-const config = {
-    collections: null
-}
-const applyCollectionsConfig = (c) => config.collections = c
+
 
 
 
@@ -295,11 +293,10 @@ const entitiesRepo = (conn) => {
 
 const publicAssetsRepo = (connection) => {
     
-    publicAssetsRouter.get("/assets/:collection/:entity_uuid/images/:file_uuid/:format", async (req, res) => {
+    publicAssetsRouter.get("/assets/:collection/:entity_uuid/:edit_id/:type/:node_uuid/:format", async (req, res) => {
 
-        const {collection, entity_uuid, file_uuid, format} = req.params
-        const path = await findEntityImage(connection)(collection, entity_uuid, file_uuid, format) 
-        || await findEntityContentImage(connection)(collection, entity_uuid, file_uuid, format)
+        const {collection, entity_uuid, edit_id, type, node_uuid, format} = req.params
+        const path = await findEntityAsset(connection, collection, {entity_uuid, edit_id, type, node_uuid, format}) 
 
         console.log('path', path)
         
@@ -321,7 +318,6 @@ const publicAssetsRepo = (connection) => {
 }
 
 module.exports = {
-    applyCollectionsConfig,
     entitiesRepo,
     publicAssetsRepo
 }

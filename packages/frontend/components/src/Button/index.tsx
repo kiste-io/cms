@@ -36,7 +36,7 @@ export const ButtonGroup = ({children}) => <div className={cx('ButtonGroup')}>{c
 
 
 
-export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon, children}) => {
+export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, label, icon, children, folder}) => {
 
     const [upload, setUpload] = useState(false)
 
@@ -45,6 +45,11 @@ export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, 
       onChange(files)
     } 
 
+    const getOptionalProps = () => {
+      console.log('name folder', folder)
+      return folder ? { multiple: true, directory:"", webkitdirectory:"", moxdirectory:"" } : {}
+    }
+
     return (<div >
         <label htmlFor={id}>            
             <Button icon={icon} label={label} as='span' onClick={() => setUpload(true)}>{children}</Button>        
@@ -52,11 +57,14 @@ export const UploadButton = ({id, multiple, accept = "image/*", onChange, name, 
         {upload && <input
               name={name}
               style={{display: 'none'}}
-              accept={accept}
+            
               id={id}
               multiple={multiple}
               type="file"
               onChange={enrichOnChange}
+            
+              {...getOptionalProps()}
+              
           />}
         
     </div>)

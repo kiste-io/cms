@@ -1,5 +1,5 @@
-const {from, of, zip} = require('rxjs')
-const {map, tap, mergeMap, reduce, scan, catchError} = require('rxjs/operators')
+const {from, of, zip, lastValueFrom} = require('rxjs')
+const {map, tap, mergeMap, reduce, scan, catchError, filter} = require('rxjs/operators')
 const fs = require('fs')
 const sharp = require('sharp')
 require('dotenv').config()
@@ -56,14 +56,14 @@ const ensureDir = (path) => new Promise((resolve, reject) => fs.exists(path, (ex
 ))
 
 
-const processImages = (dir, fields, files) => {
+const _processImages = (dir, fields, files) => {
     return of(...fields).pipe(
         mergeMap((field) => zip(of(field), from(resize(dir, files[field.file_uuid])))),
         tap(console.log),
         reduce((acc, [field, pathes]) => [...acc, {...field, pathes}], []))
 } 
 
-const urifyImages = (collection, entity_uuid, images) => {
+const _urifyImages = (collection, entity_uuid, images) => {
 
     return images.map(({file_uuid, pathes, ...rest}) => {
         
@@ -78,6 +78,16 @@ const urifyImages = (collection, entity_uuid, images) => {
     
 }
 
+const urifyImages = (pathes, {collection, entity_uuid, edit_id, type, node_uuid}) => {
+
+   
+        // /entities/:collection/:entity_uuid/images/:file_uuid/:format
+    return Object.keys(pathes).reduce((acc, key) => 
+        ({...acc, [key]: `${process.env.BACKED_SERVICE_URL}/assets/${collection}/${entity_uuid}/${edit_id}/${type}/${node_uuid}/${key}`}), {})
+
+ 
+    
+}
 
 const urifyImages2 = (meta, pathes) => {
 
@@ -145,10 +155,113 @@ const uploadImagesCommand2 = async (filesData) => {
 } 
 
 
+const matchFilesToFields = (filesPayload, fieldsPayload) => {
+    
+    const files = Object.keys({...filesPayload}).reduce((acc, id) => {
+        
+        return {...acc, [id] : Object.keys(filesPayload[id]).reduce((_acc, type) => {
+            const files = !Array.isArray(filesPayload[id][type]) 
+            ? [filesPayload[id][type]]
+            : filesPayload[id][type]
+
+            const filenames = Object.keys(fieldsPayload[id][type]).map(node_uuid => {
+                return fieldsPayload[id][type][node_uuid].filename
+            })
+
+            const uuidMap = Object.keys(fieldsPayload[id][type]).reduce((acc, node_uuid) => {
+                return {...acc, [fieldsPayload[id][type][node_uuid].filename] : node_uuid}
+            }, {})
+
+            return {..._acc, [type] : files
+                .filter(file => filenames.includes(encodeURI(file.name)) && file.size > 0)
+                .map(file => ({file, node_uuid: uuidMap[encodeURI(file.name)]}))
+            }}, {})
+        
+    }}, {})
+
+    const keys = Object.keys(files)
+        .filter(id => 
+            Object.keys(files[id]).filter(type => files[id][type].length > 0).length > 0)
+    
+    
+
+    return {files, keys}
+}
+
+
+const uploadFiles =  async (collection, entity_uuid, fieldsPayload, filesPayload, config) => {
+
+   
+    const {files, keys} = matchFilesToFields(filesPayload, fieldsPayload)
+            
+    if(keys.length === 0) return Promise.resolve({})
+
+    const source$ = from(keys).pipe(
+        
+        mergeMap(key => from(config.getEntityEditConfigAssetTypes(collection, key))),
+
+        map(t => ({...t, entity_uuid, files: files[t.edit_id][t.type]})),
+
+        mergeMap(assetPayload => zip(of(assetPayload), from(ensureDir(`${imgRootDir}/${assetPayload.entity_uuid}`)))),
+
+        tap((r) => console.log('assetPayload dest', r)),
+
+        mergeMap(([assetPayload, dest]) => from(processAsset(assetPayload, dest, {collection, entity_uuid}))),
+
+        tap((r) => console.log('reslut', r)),
+        
+        filter(r => r)
+    )
+
+    return await lastValueFrom(source$)
+    
+}
+
+
+const processAsset =  async ({type, edit_id, sizes, files}, dest_dir, meta) => {
+        
+    if(type === 'images'){
+        const images = await processImages(files, sizes, dest_dir, {...meta, type, edit_id})
+        return Promise.resolve({[edit_id] : {[type]: [...images]}})    
+    }
+    
+    return Promise.resolve()    
+
+}
+
+
+const processImages = async (files, sizes, dest_dir, meta) => {
+    const source$ = from(files).pipe(
+        mergeMap((file) => from(proccessImage(file, sizes, dest_dir, meta))),
+        scan((acc, value) => [...acc, value], [])
+    )
+    return await lastValueFrom(source$)
+}
+    
+    
+
+
+
+const proccessImage = ({file, node_uuid}, sizes, dest_dir, meta) =>  
+    Promise.all(sizes.map(({id, ...params}) =>  {
+    
+        const dest_path = `${dest_dir}/${id}_${escape(file.name)}`
+
+        return  sharp(file.path)
+            .resize({...params})
+            .toFile(dest_path)
+            .then(_ => ({[id]: dest_path}))
+            
+    }))
+    .then((result) => result.reduce((acc, r) => ({...acc, ...r}), {}))
+    .then((result) => ( {node_uuid, src: {...result}, uri: urifyImages(result, {...meta, node_uuid})}))
+
+    
+
 module.exports =  {
     uploadImagesCommand, 
     uploadImagesCommand2,
-    
+    uploadFiles,
     digitalOceanUpload: (images) => of(images)
             .pipe(
 

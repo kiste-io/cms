@@ -144,7 +144,7 @@ findEntities(connection, collection).then((entities) => {
                 {upsert: true},
                 (err, result) => {
                     if(err) reject(err)
-                    else resolve(result)
+                    else resolve(result?.result)
                 })
         })
         
@@ -197,6 +197,22 @@ const findEntityImage = (connection) =>
     
         image ? resolve(image.pathes[format]) : resolve(null)
             
+    }))
+
+const findEntityAsset = (connection, collection, {entity_uuid, edit_id, type, node_uuid, format}) =>
+    new Promise((resolve, _) => connection(async (db) => {
+        const result = await db
+        .collection(collection)
+        .findOne({entity_uuid})
+
+        const typeAsset = result && result[edit_id] && result[edit_id][type] || [] 
+        
+        const node = typeAsset.length && typeAsset.find(a => a.node_uuid === node_uuid)
+       
+        const path = node && node.uri && node.src[format]
+    
+        path ? resolve(path) : resolve(null)
+    
     }))
 
 const findEntityContentImage = (connection) => 
@@ -340,7 +356,10 @@ const deleteEntityCategory = connection =>
 const updateCollectionParameters = (connection, collection, parameters) => 
     new Promise((resolve, reject) => connection(db => {
 
-        if(parameters.length == 0) resolve()
+        if(parameters.length === 0) {
+            resolve()
+            return
+        }
         
         try {
             db.collection(parametersCollection(collection))
@@ -348,7 +367,7 @@ const updateCollectionParameters = (connection, collection, parameters) =>
                 filter : { parameter_uuid : p.parameter_uuid },
                 update : { $set : { label : p.label } },
                 upsert: true
-            } }))).then(resolve)
+            } }))).then((r) => resolve(r?.result))
         
         } catch (e) {
             reject(e)
@@ -389,5 +408,6 @@ module.exports = {
     deleteEntityCategory,
     updateCollectionCategory,
     updateCollectionParameters,
-    findCollectionParameters
+    findCollectionParameters,
+    findEntityAsset
 }
