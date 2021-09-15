@@ -20,7 +20,8 @@ const {
     findEntityCategories,
     reorderEntities,
     findCategory,
-    deleteEntityCategory
+    deleteEntityCategory,
+    findGltfAsset
 } = require('../src/db')
 
 
@@ -291,12 +292,67 @@ const entitiesRepo = (conn) => {
     return router    
 }
 
+
+
 const publicAssetsRepo = (connection) => {
+
+    const readGltfFolder =  async(req, res) => {
+
+        const {collection, entity_uuid} = req.params
+        
+        //   url: '/assets/animals/d4c2bd15-f3c6-4aef-96b4-8c560384a26e/model/gltf/textures/Scene_-_Root_baseColor.jpeg',
+        const gltfPath = await findGltfAsset(connection, collection, {entity_uuid}) 
+        const [suffix] = req.url.split('/').slice(-1)[0].split('.').slice(-1)
+    
+        let path = gltfPath
+        if(['bin', 'jpeg', 'png'].includes(suffix)){
+            const prefix = gltfPath.split('/').slice(0, -1).join('/')
+            const rest = req.url.split('/').slice(6).join('/')
+            path = `${prefix}/${rest}`
+        }
+
+    
+        fs.exists(path, (exists) => {
+            if(!exists) {
+                res.status(404)
+                res.send(`can not read file by id: ${entity_uuid}`)
+            }else {
+                //response.type('image/jpeg')
+      
+                res.sendFile(path)
+            }
+        })          
+    }
+
+    publicAssetsRouter.get("/assets/:collection/:entity_uuid/model/gltf/*", readGltfFolder)
+
     
     publicAssetsRouter.get("/assets/:collection/:entity_uuid/:edit_id/:type/:node_uuid/:format", async (req, res) => {
 
         const {collection, entity_uuid, edit_id, type, node_uuid, format} = req.params
         const path = await findEntityAsset(connection, collection, {entity_uuid, edit_id, type, node_uuid, format}) 
+
+        
+        fs.exists(path, (exists) => {
+            if(!exists) {
+                res.status(404)
+                res.send(`can not read file by id: ${entity_uuid}`)
+            }else {
+                //response.type('image/jpeg')
+      
+                res.sendFile(path)
+            }
+        })          
+        
+      })
+
+
+     
+      
+      publicAssetsRouter.get("/assets/:collection/:entity_uuid/:edit_id/:type/:node_uuid", async (req, res) => {
+
+        const {collection, entity_uuid, edit_id, type, node_uuid} = req.params
+        const path = await findEntityAsset(connection, collection, {entity_uuid, edit_id, type, node_uuid}) 
 
         console.log('path', path)
         
@@ -313,6 +369,7 @@ const publicAssetsRepo = (connection) => {
         })          
         
       })
+      
 
     return publicAssetsRouter
 }

@@ -1,7 +1,9 @@
 const {from, of, zip, lastValueFrom} = require('rxjs')
 const {map, tap, mergeMap, reduce, scan, catchError, filter} = require('rxjs/operators')
 const fs = require('fs')
+const { access, copyFile, mkdir } = require('fs/promises')
 const sharp = require('sharp')
+
 require('dotenv').config()
 
 const imgRootDir = `${process.env.IMG_ROOT_DIR}`;
@@ -79,14 +81,19 @@ const _urifyImages = (collection, entity_uuid, images) => {
 }
 
 const urifyImages = (pathes, {collection, entity_uuid, edit_id, type, node_uuid}) => {
-
    
-        // /entities/:collection/:entity_uuid/images/:file_uuid/:format
+    // /entities/:collection/:entity_uuid/images/:file_uuid/:format
     return Object.keys(pathes).reduce((acc, key) => 
         ({...acc, [key]: `${process.env.BACKED_SERVICE_URL}/assets/${collection}/${entity_uuid}/${edit_id}/${type}/${node_uuid}/${key}`}), {})
 
- 
     
+}
+
+const urifyEntityAsset = ({collection, entity_uuid, edit_id, type, node_uuid}) => {
+   
+    // /entities/:collection/:entity_uuid/images/:file_uuid/:format
+    return`${process.env.BACKED_SERVICE_URL}/assets/${collection}/${entity_uuid}/${edit_id}/${type}/${node_uuid}`        
+
 }
 
 const urifyImages2 = (meta, pathes) => {
@@ -155,25 +162,45 @@ const uploadImagesCommand2 = async (filesData) => {
 } 
 
 
-const matchFilesToFields = (filesPayload, fieldsPayload) => {
+const matchFilesToFields = (collection, config, filesPayload, fieldsPayload) => {
     
-    const files = Object.keys({...filesPayload}).reduce((acc, id) => {
+    const files = Object.keys(filesPayload).reduce((acc, id) => {
         
+        const assetsConfig = config.getEntityEditConfigAssetTypes(collection, id)
+
         return {...acc, [id] : Object.keys(filesPayload[id]).reduce((_acc, type) => {
+            
+            const isSchehduled = fieldsPayload[id] && fieldsPayload[id][type]
+
+            console.log('isSchehduled', id, type, fieldsPayload[id])
+            if(!isSchehduled) return _acc
+
+            
+
             const files = !Array.isArray(filesPayload[id][type]) 
             ? [filesPayload[id][type]]
             : filesPayload[id][type]
 
-            const filenames = Object.keys(fieldsPayload[id][type]).map(node_uuid => {
+            const asssetConfig = assetsConfig.find(a => a.type === type && a.edit_id === id)
+
+            if(asssetConfig.folder) {
+                // for folder exit hier with the same node_uuid
+                const [node_uuid] = Object.keys(fieldsPayload[id][type])
+                return {..._acc, [type] : files.map(file => ({file, node_uuid}))}
+            }
+            
+            const filenames =  Object.keys(fieldsPayload[id][type]).map(node_uuid => {
                 return fieldsPayload[id][type][node_uuid].filename
-            })
+            }) || []
 
             const uuidMap = Object.keys(fieldsPayload[id][type]).reduce((acc, node_uuid) => {
                 return {...acc, [fieldsPayload[id][type][node_uuid].filename] : node_uuid}
             }, {})
 
             return {..._acc, [type] : files
-                .filter(file => filenames.includes(encodeURI(file.name)) && file.size > 0)
+                .filter(file => (
+                    filenames.includes(encodeURI(file.name)) && file.size > 0)
+                )
                 .map(file => ({file, node_uuid: uuidMap[encodeURI(file.name)]}))
             }}, {})
         
@@ -191,20 +218,23 @@ const matchFilesToFields = (filesPayload, fieldsPayload) => {
 
 const uploadFiles =  async (collection, entity_uuid, fieldsPayload, filesPayload, config) => {
 
-   
-    const {files, keys} = matchFilesToFields(filesPayload, fieldsPayload)
+    const {files, keys} = matchFilesToFields(collection, config, filesPayload, fieldsPayload)
             
     if(keys.length === 0) return Promise.resolve({})
 
     const source$ = from(keys).pipe(
-        
-        mergeMap(key => from(config.getEntityEditConfigAssetTypes(collection, key))),
+                
+        mergeMap(id => from(Object.keys(files[id]).map(type => ({id, type})))),
 
-        map(t => ({...t, entity_uuid, files: files[t.edit_id][t.type]})),
+        map(t => ({...t, entity_uuid, files: files[t.id][t.type], ...config.getEntityEditConfigAssetTypes(collection, t.id).find(a => a.type === t.type)})),
+
+        tap(t => console.log('config t', t)),
+
+        filter(t => t.files.length > 0),
 
         mergeMap(assetPayload => zip(of(assetPayload), from(ensureDir(`${imgRootDir}/${assetPayload.entity_uuid}`)))),
 
-        tap((r) => console.log('assetPayload dest', r)),
+        tap((r) => console.log('asssetPayload dest', r)),
 
         mergeMap(([assetPayload, dest]) => from(processAsset(assetPayload, dest, {collection, entity_uuid}))),
 
@@ -218,15 +248,73 @@ const uploadFiles =  async (collection, entity_uuid, fieldsPayload, filesPayload
 }
 
 
-const processAsset =  async ({type, edit_id, sizes, files}, dest_dir, meta) => {
+const processAsset =  async ({type, edit_id, sizes, folder, files}, dest_dir, meta) => {
         
     if(type === 'images'){
         const images = await processImages(files, sizes, dest_dir, {...meta, type, edit_id})
         return Promise.resolve({[edit_id] : {[type]: [...images]}})    
     }
+    if(type === 'gltf' && folder){
+        const gltf = await processGltfFolder(files, dest_dir, {...meta, type, edit_id})
+        return Promise.resolve({[edit_id] : {[type]: [gltf]}})    
+    }
+    if(type === 'usdz'){
+        const usdz = await processUsdz(files, dest_dir, {...meta, type, edit_id})
+        return Promise.resolve({[edit_id] : {[type]: [usdz]}})    
+    }
     
     return Promise.resolve()    
 
+}
+
+const ensureDirPath = (path, deep) => {
+    const folders = path.split('/')
+    if(folders.length === deep) return path
+
+    const dir = folders.slice(0, deep + 1).join('/')
+    try {
+        fs.accessSync(dir, fs.constants.R_OK | fs.constants.W_OK)
+    } catch (err) {
+        fs.mkdirSync(dir)
+    }
+    return ensureDirPath(path, deep + 1)
+    
+
+}
+
+
+const processUsdz = async (files, dest_dir, meta) => {
+    
+    const path = `${dest_dir}/usdz`
+    ensureDirPath(path, dest_dir.split('/').length)
+
+    
+    const [{file, node_uuid}] = files
+    const filepath = `${path}/${file.name}`
+
+    await copyFile(file.path, filepath)
+    
+    return Promise.resolve({node_uuid, src: filepath, uri: urifyEntityAsset({...meta, node_uuid})})
+}
+
+const processGltfFolder = async (files, dest_dir, meta) => {
+
+    const result = await Promise.all(files.map(({file}) => {
+        const path = `${dest_dir}/${file.name}`
+        const dir = path.split('/').slice(0, -1).join('/')
+        ensureDirPath(dir, dest_dir.split('/').length)
+
+        return copyFile(file.path, path).then(() => path)
+    }))
+    
+    const {node_uuid} = files[0]
+
+    const mainPath = result.reduce((gltfPath, path) => {
+        const ext = path.split('/').slice(-1)[0].split('.').slice(-1)[0]
+        return ext === 'gltf' ? path : gltfPath
+    }, '')
+    
+    return Promise.resolve({node_uuid, src: mainPath, uri: urifyEntityAsset({...meta, node_uuid})})
 }
 
 

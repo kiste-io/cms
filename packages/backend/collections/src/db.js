@@ -80,78 +80,89 @@ const reorderEntities = (connection, collection) => (list) => new Promise((resol
 })
 
 
-const updateEntityData = (connection, collection) => (entity_uuid, payload) => new Promise((resolve, reject) => 
-findEntities(connection, collection).then((entities) => {
-    try {
-        const {title } = payload
-        const entity = entities.find(e => e.entity_uuid === entity_uuid) || {}
+const updateEntityData = (connection, collection) => (entity_uuid, payload) =>
+     new Promise((resolve, reject) => 
+        findEntities(connection, collection).then((entities) => {
+            try {
+                const {title } = payload
+                const entity = entities.find(e => e.entity_uuid === entity_uuid) || {}
 
-        let {slug} = entity
-        if(!slug) {
-            slug = generateSlug(title.en || title.de || 'entity', entities.map(p => p.slug))
-        }
-
-        const {images} = entity
-        if(images && payload.images) {
-            Object.keys(images).map(node_uuid => {
-                // if image file_uuid exists already then just take the current state 
-                if(payload.images[node_uuid]) {
-
-                    const image = images[node_uuid]
-                    if(image) {
-                        payload.images[node_uuid] = {...image, ...payload.images[node_uuid]}
-                    }
-                    
+                let {slug} = entity
+                if(!slug) {
+                    slug = generateSlug(title.en || title.de || 'entity', entities.map(p => p.slug))
                 }
-            })
-        }
-    
 
-        const {content} = entity
-        if(content && payload.content) {
-            Object.keys(content).map(content_uuid => {
-                // if image file_uuid exists already then just take the current state 
-                if(payload.content[content_uuid] && payload.content[content_uuid].keepimage && content[content_uuid].images) {
+                const {images} = entity
+                if(images && payload.images) {
+                    Object.keys(images).map(node_uuid => {
+                        // if image file_uuid exists already then just take the current state 
+                        if(payload.images[node_uuid]) {
 
-                    const node_uuid = payload.content[content_uuid].keepimage
-                    const image = content[content_uuid].images[node_uuid]
-                    if(image) {
-                        payload.content[content_uuid].images = {[node_uuid]: image}
-                        delete(payload.content[content_uuid].keepimage)
-                    }
-                    
+                            const image = images[node_uuid]
+                            if(image) {
+                                payload.images[node_uuid] = {...image, ...payload.images[node_uuid]}
+                            }
+                            
+                        }
+                    })
                 }
-            })
-        }
-    
-        console.log('update payload', payload, )
+            
 
-        let statement = {'$set': { ...payload, slug }}
-        if(!payload.content) {
-            statement = {...statement, "$unset": {'content' : ''}}
-        }
-        if(!payload.images) {
-            statement = {...statement, "$unset": {'images' : ''}}
-        }
-        if(!payload.parameters) {
-            statement = {...statement, "$unset": {'parameters' : ''}}
-        }
-        //reject()
-        connection(db => {
-            db.collection(collection).updateOne(
-                {entity_uuid}, 
-                statement, 
-                {upsert: true},
-                (err, result) => {
-                    if(err) reject(err)
-                    else resolve(result?.result)
+                const {content} = entity
+                if(content && payload.content) {
+                    Object.keys(content).map(content_uuid => {
+                        // if image file_uuid exists already then just take the current state 
+                        if(payload.content[content_uuid] && payload.content[content_uuid].keepimage && content[content_uuid].images) {
+
+                            const node_uuid = payload.content[content_uuid].keepimage
+                            const image = content[content_uuid].images[node_uuid]
+                            if(image) {
+                                payload.content[content_uuid].images = {[node_uuid]: image}
+                                delete(payload.content[content_uuid].keepimage)
+                            }
+                            
+                        }
+                    })
+                }
+
+
+                const {model} = entity
+                if(model && payload.model) {
+                    Object.keys(model).map(key => {
+                        if(!payload.model[key]) {
+                            payload.model[key] = model[key]
+                        }
+                    })
+                }
+            
+                console.log('update payload', payload)
+
+                let statement = {'$set': { ...payload, slug }}
+                if(!payload.content) {
+                    statement = {...statement, "$unset": {'content' : ''}}
+                }
+                if(!payload.images) {
+                    statement = {...statement, "$unset": {'images' : ''}}
+                }
+                if(!payload.parameters) {
+                    statement = {...statement, "$unset": {'parameters' : ''}}
+                }
+                //reject()
+                connection(db => {
+                    db.collection(collection).updateOne(
+                        {entity_uuid}, 
+                        statement, 
+                        {upsert: true},
+                        (err, result) => {
+                            if(err) reject(err)
+                            else resolve(result?.result)
+                        })
                 })
-        })
-        
-    } catch (err) {
-        reject(err)
-    }        
-})
+                
+            } catch (err) {
+                reject(err)
+            }        
+    })
 )
 
 
@@ -209,10 +220,24 @@ const findEntityAsset = (connection, collection, {entity_uuid, edit_id, type, no
         
         const node = typeAsset.length && typeAsset.find(a => a.node_uuid === node_uuid)
        
-        const path = node && node.uri && node.src[format]
+        const path = node && (node.src[format] || (!format && node.src))
     
         path ? resolve(path) : resolve(null)
     
+    }))
+
+const findGltfAsset = (connection, collection, {entity_uuid}) =>
+    new Promise((resolve, _) => connection(async (db) => {
+        const result = await db
+        .collection(collection)
+        .findOne({entity_uuid})
+
+        const typeAsset = result?.model?.gltf || [{}] 
+        
+        const [{src}] = typeAsset
+
+        src ? resolve(src) : resolve(null)
+
     }))
 
 const findEntityContentImage = (connection) => 
@@ -409,5 +434,6 @@ module.exports = {
     updateCollectionCategory,
     updateCollectionParameters,
     findCollectionParameters,
-    findEntityAsset
+    findEntityAsset,
+    findGltfAsset
 }

@@ -36,7 +36,6 @@ const config = {
     getEntityEditConfigAssetTypes: function (collection, edit) {
         const entityCollection = this.getEntity(collection)
         const editTuple = entityCollection?.edit?.find(c => c.id === edit) || {assets: []}
-        console.log('editTuple', editTuple)
         return editTuple.assets.map(a => ({...a, edit_id: editTuple.id}))
     },
 }
@@ -113,10 +112,7 @@ const matchFieldsToFiles = (collection, fieldsPayload) => {
 
     
     const fields = Object.keys(fieldsPayload)
-        .filter(f => {
-            console.log('f', f, !uploadEditIds.includes(f))
-            return   !uploadEditIds.includes(f)
-        })
+        .filter(f => !uploadEditIds.includes(f))
         .reduce((acc, f) => ({...acc, [f]: fieldsPayload[f]}), {})
 
     
@@ -129,7 +125,7 @@ const matchFieldsToFiles = (collection, fieldsPayload) => {
 const updateEntity = async(connection, {collection, entity_uuid, fields, files}) => {
     const fieldsPayload =  fieldsToJSON(fields)       
     const filesPayload = fieldsToJSON(files)  
-    console.log('fieldsPayload', fieldsPayload)
+
     const titleForSlug = fieldsPayload?.title?.en || fieldsPayload?.title?.de || "entity"
 
     const source$ = of(true).pipe(
