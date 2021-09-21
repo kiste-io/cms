@@ -1,11 +1,14 @@
-const {from, of, zip, interval, lastValueFrom} = require('rxjs')
-const {map, tap, mergeMap, reduce, scan, catchError, take} = require('rxjs/operators')
+const {from, of, zip, lastValueFrom} = require('rxjs')
+const {map, tap, mergeMap} = require('rxjs/operators')
 
 const {
     updateEntityData,
     updateCollectionParameters,
     findCollectionParameters,
-    updateCollectionCategory
+    updateCollectionCategory,
+    findCollection,
+    updateSingleCollection,
+    storeEntityCategory
 } = require('./db')
 
 const {
@@ -215,14 +218,51 @@ const appendContentFiles = async (fieldsPayload, filesPayload, meta) => {
         }
             
     }))
-
-
 }
+
+
+/** SINGLE */
+
+const findSingle =  async (conn, coll) => {
+
+    try {
+        const data = await findCollection(conn, coll)
+        return data && data[0] || {}
+    } catch (e) {
+        console.error(e)
+        return {}
+    }
+}
+
+const updateSingle =  (conn, {collection, fields, files}) => new Promise(async(resolve, reject) => {
+
+    const payload = fieldsToJSON(fields)
+
+    updateSingleCollection(conn, collection, payload)
+        .then(resolve)
+        .catch(reject)
+    
+})
+
+
+/** CATEGORY */
+
+const updateEntityCategory = (conn, collection, category_uuid, fields) => new Promise(async(resolve, reject) => {
+    const payload = fieldsToJSON(fields)
+    storeEntityCategory(conn)(collection, category_uuid, payload)
+        .then(resolve)
+        .catch(reject)
+})
+    
+
 
 
 module.exports = {
     applyCollectionsConfig,
     config,
     updateEntity,
-    findEntityParameters
+    findEntityParameters,
+    findSingle,
+    updateSingle,
+    updateEntityCategory
 }

@@ -11,6 +11,7 @@ import Bold  from './Bold';
 import Underline  from './Underline';
 import Loading from './Loading';
 import Back from './Back';
+import Close from './Close'
 
 export type SVGIcon = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<React.SVGProps<SVGSVGElement>> &
@@ -30,5 +31,6 @@ export const Icon = {
   Bold,
   Underline,
   Loading,
-  Back
+  Back,
+  Close
 };

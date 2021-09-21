@@ -7,7 +7,6 @@ const {fieldsToJSON} = require('../src/utils')
 
 
 const {
-    updateEntityData, 
     findEntities,
     findEntitiesByCategory,
     findEntity,
@@ -16,27 +15,29 @@ const {
     findEntityAsset,
     reorderEntityImage,
     deleteEntityImage,
-    storeEntityCategory,
     findEntityCategories,
     reorderEntities,
     findCategory,
     deleteEntityCategory,
-    findGltfAsset
+    findGltfAsset,
 } = require('../src/db')
 
 
 const {
     updateEntity,
     findEntityParameters,
-    config
+    config,
+    findSingle,
+    updateSingle,
+    updateEntityCategory,
+    
+
 } = require('../src');
 
 const {
-    uploadImagesCommand,
-    uploadImagesCommand2
-
+    uploadImagesCommand
 } = require('../src/upload');
-const { type } = require('os');
+
 
 
 function sleep(ms) {
@@ -75,6 +76,38 @@ const entitiesRepo = (conn) => {
      router.get("/collections", async (req, res) => {
    
         res.send(config.collections)        
+        
+    })
+
+
+
+    // singles
+    router.get("/singles/:collection",  async (req, res) => {
+        const {collection} = req.params
+
+        findSingle(conn, collection).then(result => {
+            res.send(result)
+        }).catch(() => {
+            res.status(500)
+            res.send()
+        })        
+        
+    })
+
+    router.post("/singles/:collection",  async (req, res) => {
+        const {collection} = req.params
+       
+        formidable({ multiples: true }).parse(req, async (err, fields, files)  => {
+
+            updateSingle(conn, {collection, fields, files}).then(() => {
+                    res.send()
+                }).catch((err) => {
+                    console.error(err)
+                    res.status(500).send()
+                })
+    
+            })
+       
         
     })
 
@@ -135,11 +168,14 @@ const entitiesRepo = (conn) => {
 
      router.post("/entities/:collection/categories/:category_uuid", async (req, res) => {
         const {collection, category_uuid} = req.params
-        const payload = req.body
+        formidable({ multiples: true }).parse(req, async (err, fields, files)  => {
 
-        await storeEntityCategory(conn)(collection, category_uuid, payload)
+            await updateEntityCategory(conn, collection, category_uuid, fields)
         
-        res.send()
+            res.send()
+
+        
+        })
     })
 
 

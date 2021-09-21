@@ -333,7 +333,7 @@ const storeEntityCategory = (connection) =>
     
             let {slug} = category
             if(!slug) {
-                slug = generateSlug(title.en || title.de || 'category', categories.map(p => p.slug))
+                slug = generateSlug(title?.en || title?.de || 'category', categories.map(p => p.slug))
                 payload = {...payload, slug}
             }
           
@@ -415,6 +415,32 @@ const findCollectionParameters = (connection, collection) =>
     
     }))
 
+
+const findCollection = (connection, collection) =>
+    new Promise((resolve, reject) => 
+        connection(async (db) => {
+    
+            const entities = await db.collection(collection).find().toArray()
+    
+            resolve(entities)
+
+    }))
+
+const updateSingleCollection = (connection, collection, payload) =>
+    new Promise(async (resolve, reject) => {
+        const statement = {'$set': { ...payload }}
+        connection(db => {
+            db.collection(collection).updateOne(
+                {collection}, 
+                statement, 
+                {upsert: true},
+                (err, result) => {
+                    if(err) reject(err)
+                    else resolve(result?.result)
+                })
+        })
+    })
+
 module.exports = {
     findEntities,
     findEntitiesByCategory,
@@ -435,5 +461,7 @@ module.exports = {
     updateCollectionParameters,
     findCollectionParameters,
     findEntityAsset,
-    findGltfAsset
+    findGltfAsset,
+    findCollection,
+    updateSingleCollection
 }

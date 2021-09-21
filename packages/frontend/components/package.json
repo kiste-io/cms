@@ -14,7 +14,8 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "build:dev": "webpack --config webpack/dev.config.js --watch",
-    "build": "webpack --config webpack/prod.config.js"
+    "build": "webpack --config webpack/prod.config.js",
+    "build:watch": "webpack --config webpack/prod.config.js"
   },
   "dependencies": {
     "classnames": "^2.2.6"
