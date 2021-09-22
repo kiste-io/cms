@@ -1,5 +1,6 @@
 const {from, of, zip, lastValueFrom} = require('rxjs')
 const {map, tap, mergeMap} = require('rxjs/operators')
+const merge = require('deepmerge')
 
 const {
     updateEntityData,
@@ -8,11 +9,15 @@ const {
     updateCollectionCategory,
     findCollection,
     updateSingleCollection,
-    storeEntityCategory
+    storeEntityCategory,
+    findSingleCollection
+
 } = require('./db')
 
 const {
-    uploadFiles
+    uploadFiles,
+    uploadSingleFiles,
+    matchSingleFilesToFields,
 } = require('./upload')
 
 const {fieldsToJSON} = require('./utils')
@@ -24,6 +29,11 @@ const config = {
 
     getEntity: function (collection) {
         return this.collections.entities.find(e => e.id ===  collection)
+    },
+
+    getCollectionConfig: function (collection) {
+        return [...this.collections.entities, ...this.collections.singles]
+            .find(e => e.id ===  collection)
     },
 
     getEntityEditConfig: function (collection, edit) {
@@ -41,6 +51,19 @@ const config = {
         const editTuple = entityCollection?.edit?.find(c => c.id === edit) || {assets: []}
         return editTuple.assets.map(a => ({...a, edit_id: editTuple.id}))
     },
+
+    getEditConfigAssetTypes: function (collection, edit) {
+        const collectionConfig = this.getCollectionConfig(collection)
+        const editTuple = collectionConfig?.edit?.find(c => c.id === edit) || {assets: []}
+        return editTuple.assets.map(a => ({...a, edit_id: editTuple.id}))
+    },
+
+    getEditConfigUploadableAssetsTypes: function (collection) {
+        const collectionConfig = this.getCollectionConfig(collection)?.edit || []
+
+        return collectionConfig.filter(c => c.assets)        
+
+    }
 }
 const applyCollectionsConfig = (c) => config.collections = c
 
@@ -149,76 +172,6 @@ const updateEntity = async(connection, {collection, entity_uuid, fields, files})
 
 
 
-const _updateEntity = async(connection, {collection, entity_uuid, fields, files}) => {
-    
-    /** root images */
-    const filesImagesPayloadArray = Array.isArray(filesPayload.images) ? filesPayload.images : [filesPayload.images].filter(el => el)
-    const imagesMeta = fieldsPayload.images && Object
-        .keys(fieldsPayload.images)
-        .map(node_uuid => ({node_uuid, ...fieldsPayload.images[node_uuid]})) || []
-
-
-
-    const imagesPayload = filesImagesPayloadArray.map(file => {
-        const uri =  encodeURI(file.name)
-
-        const node_uuid = imagesMeta.find(i => i.uri === uri)?.node_uuid
-
-        return {file, meta: {
-            node_uuid, 
-            collection, 
-            entity_uuid 
-        }}
-    }).filter(image => image.meta.node_uuid)
-    
-    const images = imagesPayload && imagesPayload.length > 0 && await uploadImagesCommand2(imagesPayload) || []
-    fieldsPayload.images && images.forEach((image) => {
-
-        fieldsPayload.images[image.node_uuid] = {...fieldsPayload.images[image.node_uuid], ...image}
-    })
-
-    /** content images */
-    await appendContentFiles(fieldsPayload, filesPayload, {collection, entity_uuid })            
-
-    const titleForSlug = fieldsPayload?.title?.en || fieldsPayload?.title?.de || "entity"
-
-    const payload = fieldsPayload
-
-
-
-
-    return await updateEntityData(connection, collection)(entity_uuid, payload, titleForSlug)
-
-}
-
-const appendContentFiles = async (fieldsPayload, filesPayload, meta) => {
-
-    if(!filesPayload.content || !fieldsPayload.content) return
-
-    await Promise.all(Object.keys(fieldsPayload.content).map(async(content_uuid) => {
-        if(filesPayload.content[content_uuid] && filesPayload.content[content_uuid].images) {
-            
-            const imagesPayload = Object.keys(filesPayload.content[content_uuid].images).map(node_uuid => {
-
-                const file = filesPayload.content[content_uuid].images[node_uuid]
-                if(!file || !file.name) return;
-
-                return {file, meta: {
-                    node_uuid, 
-                    ...meta 
-                }}
-
-            }).filter(el => el)
-
-            const images = imagesPayload && imagesPayload.length > 0 && await uploadImagesCommand2(imagesPayload) || []
-            images.forEach((image) => {
-                fieldsPayload.content[content_uuid].images = fieldsPayload.content[content_uuid].images || {}
-                fieldsPayload.content[content_uuid].images[image.node_uuid] = {...fieldsPayload.content[content_uuid].images[image.node_uuid], ...image}
-            })
-        }
-            
-    }))
-}
 
 
 /** SINGLE */
@@ -234,9 +187,38 @@ const findSingle =  async (conn, coll) => {
     }
 }
 
+const matchSilgleUploadsToFields = (fieldsPayload, uploads) => {
+
+    return merge(fieldsPayload, uploads)
+    
+}
+
 const updateSingle =  (conn, {collection, fields, files}) => new Promise(async(resolve, reject) => {
 
-    const payload = fieldsToJSON(fields)
+    const fieldsPayload = fieldsToJSON(fields)
+    const filesPayload = fieldsToJSON(files)  
+
+    const [restFieldsPayload, upload] =  await uploadSingleFiles(collection, fieldsPayload, filesPayload, config)
+
+
+    const payload = matchSilgleUploadsToFields(restFieldsPayload, upload)
+    
+    
+    const existingSingleCollection = await findSingleCollection(conn, collection)    
+    const uploadableEdits = config.getEditConfigUploadableAssetsTypes(collection)
+    uploadableEdits.forEach(({id, assets}) => {
+        if (payload[id] && existingSingleCollection[id]) {
+            Object.keys(payload[id]).map(uuid => {
+                assets.forEach(asset => {
+                    if(existingSingleCollection[id][uuid] && existingSingleCollection[id][uuid][asset.type] && !payload[id][uuid][asset.type]) {
+                        payload[id][uuid][asset.type] = existingSingleCollection[id][uuid][asset.type]
+                    }                
+                })
+                
+            })
+        }
+
+    })
 
     updateSingleCollection(conn, collection, payload)
         .then(resolve)
@@ -249,6 +231,7 @@ const updateSingle =  (conn, {collection, fields, files}) => new Promise(async(r
 
 const updateEntityCategory = (conn, collection, category_uuid, fields) => new Promise(async(resolve, reject) => {
     const payload = fieldsToJSON(fields)
+
     storeEntityCategory(conn)(collection, category_uuid, payload)
         .then(resolve)
         .catch(reject)

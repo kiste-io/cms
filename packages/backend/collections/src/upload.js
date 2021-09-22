@@ -3,10 +3,11 @@ const {map, tap, mergeMap, reduce, scan, catchError, filter} = require('rxjs/ope
 const fs = require('fs')
 const { access, copyFile, mkdir } = require('fs/promises')
 const sharp = require('sharp')
+const merge = require('deepmerge')
 
 require('dotenv').config()
 
-const imgRootDir = `${process.env.IMG_ROOT_DIR}`;
+const imgRootDir = `${process.env.ASSETS_ROOT_DIR}`;
 
 const resizeCover  = (src_file, dist_file, length, entropy) => 
     sharp(src_file)
@@ -96,6 +97,17 @@ const urifyEntityAsset = ({collection, entity_uuid, edit_id, type, node_uuid}) =
 
 }
 
+const obtainFilename = (path) => path.split('/').slice(-1)[0]
+
+const urifySingleImages = (pathes, node_uuid) => {
+    return Object.keys(pathes).reduce((acc, key) => 
+        ({...acc, [key]: `${process.env.BACKED_SERVICE_URL}/assets/${node_uuid}/${obtainFilename(pathes[key])}`}), {})
+}
+
+const urifySingleFile = (path, node_uuid) => {
+    return `${process.env.BACKED_SERVICE_URL}/assets/${node_uuid}/${obtainFilename(path)}`
+}
+
 const urifyImages2 = (meta, pathes) => {
 
 
@@ -166,7 +178,7 @@ const matchFilesToFields = (collection, config, filesPayload, fieldsPayload) => 
     
     const files = Object.keys(filesPayload).reduce((acc, id) => {
         
-        const assetsConfig = config.getEntityEditConfigAssetTypes(collection, id)
+        const assetsConfig = config.getEditConfigAssetTypes(collection, id)
 
         return {...acc, [id] : Object.keys(filesPayload[id]).reduce((_acc, type) => {
             
@@ -181,9 +193,9 @@ const matchFilesToFields = (collection, config, filesPayload, fieldsPayload) => 
             ? [filesPayload[id][type]]
             : filesPayload[id][type]
 
-            const asssetConfig = assetsConfig.find(a => a.type === type && a.edit_id === id)
-
-            if(asssetConfig.folder) {
+            const assetConfig = assetsConfig.find(a => a.type === type && a.edit_id === id)
+            
+            if(assetConfig.folder) {
                 // for folder exit hier with the same node_uuid
                 const [node_uuid] = Object.keys(fieldsPayload[id][type])
                 return {..._acc, [type] : files.map(file => ({file, node_uuid}))}
@@ -216,6 +228,10 @@ const matchFilesToFields = (collection, config, filesPayload, fieldsPayload) => 
 }
 
 
+
+
+
+
 const uploadFiles =  async (collection, entity_uuid, fieldsPayload, filesPayload, config) => {
 
     const {files, keys} = matchFilesToFields(collection, config, filesPayload, fieldsPayload)
@@ -244,6 +260,126 @@ const uploadFiles =  async (collection, entity_uuid, fieldsPayload, filesPayload
     )
 
     return await lastValueFrom(source$)
+    
+}
+
+const matchSingleFilesToFields = (collection, config, filesPayload, fieldsPayload) => {
+    const filesForUpload = []
+    // files level 1
+    Object.keys(filesPayload).map(edit_id => {
+        const assetsConfig = config.getEditConfigAssetTypes(collection, edit_id)
+
+        // files level 2
+        Object.keys(filesPayload[edit_id]).map(parent_uuid => {
+
+                // assets
+                assetsConfig.map(asset => {
+
+                
+                    // fields level 3
+                    Object.keys(fieldsPayload[edit_id][parent_uuid][asset.type]).map(node_uuid => {
+
+                        //fields level 4
+                        const {filename} = fieldsPayload[edit_id][parent_uuid][asset.type][node_uuid]
+
+                       
+                        
+                        // find corresponding filename in files
+                        
+                        const uploadedFiles = filesPayload[edit_id][parent_uuid][asset.type]
+                        const files = !Array.isArray(uploadedFiles) 
+                        ? [uploadedFiles]
+                        : uploadedFiles
+
+                        
+                        const file = files.find(f => encodeURI(f.name) === filename)
+                        
+                        console.log('fieldsPayload filename', filename, 'files', files.find(f => encodeURI(f.name) === filename))
+
+                        if (file) {
+                            filesForUpload.push({
+                                file,
+                                node_uuid,
+                                asset,
+                                parent_uuid,
+                                edit_id
+                            })
+                        }
+
+                    })    
+                   
+                })            
+        })
+    })
+
+    // clean up fields payload
+    config.getEditConfigUploadableAssetsTypes(collection).map(edit => {
+
+          // items
+        Object.keys(fieldsPayload[edit.id]).map(parent_uuid => {
+            // assets
+            edit.assets.map(asset => {
+              
+              delete fieldsPayload[edit.id][parent_uuid][asset.type]
+            })
+      })
+  
+    })
+        
+
+
+    return [fieldsPayload, filesForUpload]
+
+}
+
+const uploadSingleFiles =  async (collection, fieldsPayload, filesPayload, config) => {
+
+    const [restfields, files] = matchSingleFilesToFields(collection, config, filesPayload, fieldsPayload)
+            
+    if(files.length === 0){
+        return Promise.resolve([restfields, {}])
+    }
+
+    const source$ = from(files).pipe(                
+      
+        mergeMap(file => zip(of(file), from(ensureDir(`${imgRootDir}/${file.node_uuid}`)))),
+
+        tap((r) => console.log('asssetPayload dest', r)),
+
+        mergeMap(([file, dest]) => from(processSingleAsset(file, dest))),
+
+        scan((acc, value) => merge(acc, value), {}),
+        
+        catchError((err, caught) => {
+            console.error(err, caught)
+            return of([])
+        }),
+
+        tap((r) => console.log('reslut', r)),
+        
+        filter(r => r),
+
+        mergeMap(uploads => zip(of(restfields), of(uploads)))
+    )
+
+    return await lastValueFrom(source$)
+    
+}
+
+const processSingleAsset = async(filedata, dest_dir) => {
+    const {file, asset, node_uuid, edit_id, parent_uuid} = filedata
+
+    const {type, sizes} = asset
+   
+    if(type === 'images'){
+        const images = await processSingleImage(file, sizes, dest_dir, node_uuid)
+        return Promise.resolve({[edit_id] : {[parent_uuid] : {[type]: [images]}}})    
+    }
+    if(type === 'files'){
+        const files = await processSingleFile(file, dest_dir, node_uuid)
+        return Promise.resolve({[edit_id] : {[parent_uuid] : {[type]: [files]}}})    
+    }
+    return Promise.resolve()    
     
 }
 
@@ -344,12 +480,41 @@ const proccessImage = ({file, node_uuid}, sizes, dest_dir, meta) =>
     .then((result) => result.reduce((acc, r) => ({...acc, ...r}), {}))
     .then((result) => ( {node_uuid, src: {...result}, uri: urifyImages(result, {...meta, node_uuid})}))
 
+
+const processSingleImage = (file, sizes, dest_dir, node_uuid) =>  
+    Promise.all(sizes.map(({id, ...params}) =>  {
     
+        const dest_path = `${dest_dir}/${id}_${escape(file.name)}`
+
+        
+        return  sharp(file.path)
+            .resize({...params})
+            .toFile(dest_path)
+            .then(_ => ({[id]: dest_path}))
+            
+    }))
+    .then((result) => result.reduce((acc, r) => ({...acc, ...r}), {}))
+    .then((result) => ( {node_uuid, src: {...result}, uri: urifySingleImages(result, node_uuid)}))
+
+
+const processSingleFile = (file, dest_dir, node_uuid) => new Promise(async (resolve, reject) => {
+        
+      
+        const filepath = `${dest_dir}/${file.name}`
+
+        await copyFile(file.path, filepath).catch(reject)
+        resolve(filepath)
+    }).then((path) => ( {node_uuid, src:path, uri: urifySingleFile(path, node_uuid)}))
+
+
 
 module.exports =  {
     uploadImagesCommand, 
     uploadImagesCommand2,
     uploadFiles,
+    uploadSingleFiles,
+    matchFilesToFields,
+    matchSingleFilesToFields,
     digitalOceanUpload: (images) => of(images)
             .pipe(
 

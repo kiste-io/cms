@@ -1,3 +1,4 @@
+const merge = require('deepmerge')
 
 const findEntities = (connection, collection) => 
 new Promise((resolve, reject) => connection(async (db) => {
@@ -426,8 +427,23 @@ const findCollection = (connection, collection) =>
 
     }))
 
+const findSingleCollection = (connection, collection) =>
+    new Promise((resolve, reject) => 
+        connection(async (db) => {
+    
+            const result = await db.collection(collection).findOne({collection})
+    
+            resolve(result)
+
+}))
+
 const updateSingleCollection = (connection, collection, payload) =>
     new Promise(async (resolve, reject) => {
+
+       
+
+        
+
         const statement = {'$set': { ...payload }}
         connection(db => {
             db.collection(collection).updateOne(
@@ -463,5 +479,6 @@ module.exports = {
     findEntityAsset,
     findGltfAsset,
     findCollection,
-    updateSingleCollection
+    updateSingleCollection,
+    findSingleCollection
 }

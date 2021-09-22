@@ -5,6 +5,9 @@ const publicAssetsRouter = new express.Router();
 const fs = require('fs')
 const {fieldsToJSON} = require('../src/utils')
 
+require('dotenv').config()
+
+const assetsRootDir = `${process.env.ASSETS_ROOT_DIR}`;
 
 const {
     findEntities,
@@ -389,6 +392,28 @@ const publicAssetsRepo = (connection) => {
 
         const {collection, entity_uuid, edit_id, type, node_uuid} = req.params
         const path = await findEntityAsset(connection, collection, {entity_uuid, edit_id, type, node_uuid}) 
+
+        console.log('path', path)
+        
+        
+        fs.exists(path, (exists) => {
+            if(!exists) {
+                res.status(404)
+                res.send(`can not read file by id: ${entity_uuid}`)
+            }else {
+                //response.type('image/jpeg')
+      
+                res.sendFile(path)
+            }
+        })          
+        
+      })
+
+
+      publicAssetsRouter.get("/assets/:node_uuid/:filename", async (req, res) => {
+
+        const {node_uuid, filename} = req.params
+        const path = `${assetsRootDir}/${node_uuid}/${filename}` 
 
         console.log('path', path)
         
