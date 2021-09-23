@@ -90,7 +90,7 @@ const updateEntityData = (connection, collection) => (entity_uuid, payload) =>
 
                 let {slug} = entity
                 if(!slug) {
-                    slug = generateSlug(title.en || title.de || 'entity', entities.map(p => p.slug))
+                    slug = generateSlug(title.en || title.de || title || 'entity', entities.map(p => p.slug))
                 }
 
                 const {images} = entity

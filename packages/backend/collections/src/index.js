@@ -152,15 +152,13 @@ const updateEntity = async(connection, {collection, entity_uuid, fields, files})
     const fieldsPayload =  fieldsToJSON(fields)       
     const filesPayload = fieldsToJSON(files)  
 
-    const titleForSlug = fieldsPayload?.title?.en || fieldsPayload?.title?.de || "entity"
 
     const source$ = of(true).pipe(
         mergeMap(_ => from(ensureAttributes(connection, collection, fieldsPayload))),
         mergeMap(_ => zip(of(_), from(uploadFiles(collection, entity_uuid, fieldsPayload, filesPayload, config)))),
         mergeMap(([attributes, uploads]) => {
             const fields = matchFieldsToFiles(collection, fieldsPayload)
-            console.log('[attributes, fields, uploads]', [attributes, fields, uploads])
-            return updateEntityData(connection, collection)(entity_uuid, {...fields, ...attributes, ...uploads}, titleForSlug)
+            return updateEntityData(connection, collection)(entity_uuid, {...fields, ...attributes, ...uploads})
         }),
         tap(payload => console.log('tap', payload)),
         
