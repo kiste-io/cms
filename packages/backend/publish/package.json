@@ -1,0 +1,33 @@
+{
+  "name": "@kiste/backend-publish",
+  "version": "0.0.1",
+  "description": "Publish projects",
+  "author": "vsevolod.dolgopolov <zavalit@gmail.com>",
+  "homepage": "https://github.com/kiste-io/cms#readme",
+  "license": "ISC",
+  "files": [
+    "src",
+    "express"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiste-io/cms.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/kiste-io/cms/issues"
+  },
+  "peerDependencies": {
+    "@kiste/backend-mongo-connector": "^0.0.12"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
+  }
+}
