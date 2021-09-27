@@ -136,8 +136,10 @@ const updateEntityData = (connection, collection) => (entity_uuid, payload) =>
                     })
                 }
             
-                console.log('update payload', payload)
 
+                if (typeof(payload.parameters) === "undefined") {
+                    delete payload.parameters
+                }
                 let statement = {'$set': { ...payload, slug }}
                 if(!payload.content) {
                     statement = {...statement, "$unset": {'content' : ''}}
@@ -146,7 +148,7 @@ const updateEntityData = (connection, collection) => (entity_uuid, payload) =>
                     statement = {...statement, "$unset": {'images' : ''}}
                 }
                 if(!payload.parameters) {
-                    statement = {...statement, "$unset": {'parameters' : ''}}
+                    statement = {...statement, "$unset": {'parameters' : {}}}
                 }
                 //reject()
                 connection(db => {

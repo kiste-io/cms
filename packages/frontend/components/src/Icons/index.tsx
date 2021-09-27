@@ -12,6 +12,7 @@ import Underline  from './Underline';
 import Loading from './Loading';
 import Back from './Back';
 import Close from './Close';
+import Upload from './Upload';
 import Edit from './Edit';
 
 export type SVGIcon = React.ForwardRefExoticComponent<
@@ -34,5 +35,6 @@ export const Icon = {
   Loading,
   Back,
   Close,
-  Edit
+  Edit,
+  Upload
 };

@@ -312,17 +312,19 @@ const matchSingleFilesToFields = (collection, config, filesPayload, fieldsPayloa
         })
     })
 
-    // clean up fields payload
-    config.getEditConfigUploadableAssetsTypes(collection).map(edit => {
+     // clean up fields payload
+     config.getEditConfigUploadableAssetsTypes(collection).map(edit => {
 
-          // items
-        Object.keys(fieldsPayload[edit.id]).map(parent_uuid => {
+        // items
+        fieldsPayload[edit.id] && Object.keys(fieldsPayload[edit.id]).map(parent_uuid => {
+
             // assets
             edit.assets.map(asset => {
-              
-              delete fieldsPayload[edit.id][parent_uuid][asset.type]
+                
+                    delete fieldsPayload[edit.id][parent_uuid][asset.type]
+                
             })
-      })
+        })
   
     })
         
