@@ -421,7 +421,7 @@ const publicAssetsRepo = (connection) => {
         fs.exists(path, (exists) => {
             if(!exists) {
                 res.status(404)
-                res.send(`can not read file by id: ${entity_uuid}`)
+                res.send(`can not read file`)
             }else {
                 //response.type('image/jpeg')
       

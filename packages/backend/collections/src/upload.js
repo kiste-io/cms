@@ -421,18 +421,18 @@ const ensureDirPath = (path, deep) => {
 }
 
 
-const processUsdz = async (files, dest_dir, meta) => {
+const processUsdz = async (files, _, meta) => {
     
-    const path = `${dest_dir}/usdz`
-    ensureDirPath(path, dest_dir.split('/').length)
-
     
     const [{file, node_uuid}] = files
-    const filepath = `${path}/${file.name}`
+    const _dist_dir = `${imgRootDir}/${node_uuid}`
+    await  ensureDir(_dist_dir)
+
+    const filepath = `${_dist_dir}/${file.name}`
 
     await copyFile(file.path, filepath)
     
-    return Promise.resolve({node_uuid, src: filepath, uri: urifyEntityAsset({...meta, node_uuid})})
+    return Promise.resolve({node_uuid, src: filepath, uri: urifySingleFile(filepath, node_uuid)})
 }
 
 const processGltfFolder = async (files, dest_dir, meta) => {
