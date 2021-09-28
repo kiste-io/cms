@@ -65,6 +65,7 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
     setReplacement(range)
   }
   
+
   return (<div className={cx('EditorActionsMenu')} onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
     {!link.mode 
     ?<ButtonGroup>
@@ -165,13 +166,15 @@ const firstLineContent = /^(?<content>.*?)<div>/g
 const breakedContent = /(<div><br><\/div>)/g
 const plainContent = /<div>(?<content>.*?)<\/div>/g
 const spannedContent = /(<span .*?>)(?<content>.*?)(<\/span>)/g
-const uContent = /(<u.*?>)(?<content>.*?)(<\/u>)/g
-const bContent = /(<b.*?>)(?<content>.*?)(<\/b>)/g
-const iContent = /(<i.*?>)(?<content>.*?)(<\/i>)/g
+const uContent = /(<u\s.*?>)(?<content>.*?)(<\/u>)/g
+const bContent = /(<b\s.*?>)(?<content>.*?)(<\/b>)/g
+const iContent = /(<i\s.*?>)(?<content>.*?)(<\/i>)/g
 
 
 
 const NativeTextarea = ({name, className, editorInnerHTML}) => {
+
+  console.log('in editorInnerHTML', editorInnerHTML)
   const html = (editorInnerHTML || '')
   .replace(firstLineContent, "<p>$<content></p><div>")
   .replace(breakedContent, "<br>")
