@@ -58,13 +58,77 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   const setUnderline = (e) => {
     e.preventDefault()
 
-    const parent = document.createElement('u');
-    parent.appendChild(range.extractContents())
-    range.insertNode(parent)
+    if(anchorParentNodeName === 'U'){
+      /*
+      const uRange = range.cloneRange()
+      const {startOffset, endOffset} = range
+      const {nodeValue} = range.commonAncestorContainer
+      uRange.setStart(range.startContainer, 0)
+      const before = nodeValue.substr(0, startOffset)
+      const voi = nodeValue.substr(startOffset, endOffset - startOffset)
+      const after = nodeValue.substr(endOffset)
 
-    setReplacement(range)
+      const u = document.createElement('u');
+      const bt = document.createTextNode(before)
+      u.appendChild(bt)
+      uRange.insertNode(u)
+
+      const voit = document.createTextNode(voi)
+      u.parentNode.insertBefore(voit, u.nextSibling)
+      const u2 = document.createElement('u');
+      const u2t = document.createTextNode(after)
+      u2.appendChild(u2t)
+      voit.parentNode.insertBefore(u2t, voit.nextSibling)
+      
+      */
+
+      const [startOffset, endOffset] = [anchorOffset, focusOffset].sort()
+      console.log(document.getSelection(), )
+      const {parentElement} = anchorNode
+      const chars = parentElement.innerText
+      const before = chars.substr(0, startOffset)
+      const voi = chars.substr(startOffset, endOffset - startOffset)
+      const after = chars.substr(endOffset)
+
+      var fragment = document.createDocumentFragment();
+
+
+      if(before.length > 0) {
+        const u = document.createElement('u');
+        const bt = document.createTextNode(before)
+        u.appendChild(bt)
+        fragment.appendChild(u)        
+      }
+      
+      const voit = document.createTextNode(voi)
+      fragment.appendChild(voit)
+
+      if(after.length > 0) {
+        const u2 = document.createElement('u');
+        const u2t = document.createTextNode(after)
+        u2.appendChild(u2t)
+        fragment.appendChild(u2)
+      }
+
+      
+      parentElement.parentElement.replaceChild(fragment, parentElement)
+      setReplacement(range)
+
+
+    }else {
+      const parent = document.createElement('u');
+      parent.appendChild(range.extractContents())
+      range.insertNode(parent)
+      
+      setReplacement(range)
+    }
+
+    
   }
   
+  const {anchorNode, anchorOffset, focusOffset} = document.getSelection()
+
+  const anchorParentNodeName = anchorNode.parentNode.nodeName
 
   return (<div className={cx('EditorActionsMenu')} onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
     {!link.mode 
@@ -75,7 +139,7 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
 
         <Button size="small"   onClick={setBold} ><Icon.Bold height="18" width="18" /></Button>
 
-        <Button size="small" onClick={setUnderline}><Icon.Underline height="18" width="18"/></Button>
+        <Button size="small" active={anchorParentNodeName === 'U'} onClick={setUnderline}><Icon.Underline height="18" width="18"/></Button>
 
       </ButtonGroup>
     : <ButtonGroup>
@@ -174,7 +238,6 @@ const iContent = /(<i\s.*?>)(?<content>.*?)(<\/i>)/g
 
 const NativeTextarea = ({name, className, editorInnerHTML}) => {
 
-  console.log('in editorInnerHTML', editorInnerHTML)
   const html = (editorInnerHTML || '')
   .replace(firstLineContent, "<p>$<content></p><div>")
   .replace(breakedContent, "<br>")

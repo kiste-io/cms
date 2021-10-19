@@ -10,12 +10,12 @@ const cx = classnames.bind(style);
 /**
  * Primary UI component for user interaction
  */
-export const Button = ({ primary = false, variant = null, size = 'medium', label = null, icon = null, disabled = false, as = 'button', children, ...props }) => {
+export const Button = ({ primary = false, variant = null, size = 'medium', active = false, label = null, icon = null, disabled = false, as = 'button', children, ...props }) => {
   const mode = primary ? 'primary' : 'default';
   
   
   return React.createElement(as, 
-    { className: cx('Button', size, mode, {icon, disabled, badge: variant === 'badge'}), ...props },
+    { className: cx('Button', size, mode, {icon, disabled, badge: variant === 'badge', active}), ...props },
     [label && <span>{label}</span>, icon, children])
   }
 
