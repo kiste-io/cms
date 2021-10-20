@@ -29,6 +29,16 @@
 .EditorActionsMenu {
     margin: 10px 5px;
     box-shadow: 0px 0px 4px $color-default-50;
+
+    input {
+        margin: 2px;
+        padding: 2px;
+        margin-right: 0;
+        + span {
+            margin: 2px 0;
+            margin-right: 2px;
+        }
+    }
 }
 
 

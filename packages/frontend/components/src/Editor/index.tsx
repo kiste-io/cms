@@ -6,14 +6,87 @@ import Portal from '../Portal';
 
 const cx = classnames.bind(style);
 
+
+const removeTag = (range, nodeName, anchorNode, anchorParentNodeName, anchorOffset, focusOffset, attr?) => {
+  const [startOffset, endOffset] = [anchorOffset, focusOffset].sort((a, b) => a-b)
+  const {parentElement} = anchorNode
+  const chars = parentElement.innerText
+  const before = chars.substr(0, startOffset)
+  const voi = chars.substr(startOffset, endOffset - startOffset)
+  const after = chars.substr(endOffset)
+
+  var fragment = document.createDocumentFragment();
+
+  if(before.length > 0) {
+    const u = document.createElement(nodeName);
+    const bt = document.createTextNode(before);
+  
+    u.appendChild(bt)
+    attr && attr(u)
+    fragment.appendChild(u)        
+  }
+  
+  const voit = document.createTextNode(voi)
+  fragment.appendChild(voit)
+
+  if(after.length > 0) {
+    const u2 = document.createElement(nodeName);
+    const u2t = document.createTextNode(after)
+    u2.appendChild(u2t)
+    attr && attr(u2)
+
+    fragment.appendChild(u2)
+  }
+
+  
+  parentElement.parentElement.replaceChild(fragment, parentElement)
+}
+
+const manipulateString = (range, nodeName, anchorNode, anchorParentNodeName, anchorOffset, focusOffset, attr?) => {
+
+  if(anchorParentNodeName === nodeName.toUpperCase()){
+    removeTag(range, nodeName, anchorNode, anchorParentNodeName, anchorOffset, focusOffset, attr)
+  }else {
+    const parent = document.createElement(nodeName);
+    parent.appendChild(range.extractContents())
+    range.insertNode(parent)
+    
+  }
+}
+
 const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
 
   const [link, setLink] = useState<{mode: boolean, url: string}>({mode: false, url: ''})
+  const linkInputRef = useRef()
+
+  useEffect(() => {
+    if(!linkInputRef.current) return
+
+    const clickListener = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const ref = linkInputRef.current as any
+      
+      console.log('ref && !ref.contains(target)', ref, !ref.contains(target))
+      if(ref && !ref.contains(target)) {
+         // remove
+         document.getSelection().removeAllRanges();
+         setIamIjectingLink(false)
+         setLink({...link, mode: false})
+      }
+      
+  }
+
+    document.addEventListener('click', clickListener)
+    return () => document.removeEventListener('click', clickListener);
+
+  }, [linkInputRef.current, link])
 
   if(!range) {
     if(link.mode) setLink({...link, mode: false})
     return null
   }
+
+
 
   const position = range.getBoundingClientRect()
   const {left, width, top} = position
@@ -21,8 +94,12 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   const startLinking = (e) => {
     e.preventDefault()
 
-    setLink({...link, mode: true}); 
-    setIamIjectingLink(true)
+    if(anchorParentNodeName === 'A'){
+      removeTag(range, 'a', anchorNode, anchorParentNodeName, anchorOffset, focusOffset, (anchor) => anchor.href = link.url )
+    }else {
+      setLink({...link, mode: true}); 
+      setIamIjectingLink(true)
+    }    
   }
 
   const injectLink = (e) => {
@@ -40,112 +117,51 @@ const EditorActionsMenu = ({range, setIamIjectingLink, setReplacement}) => {
   
   const setItalic = (e) => {
     e.preventDefault()
-    const parent = document.createElement('i');
-    parent.appendChild(range.extractContents())
-    range.insertNode(parent)
+    manipulateString(range, 'i', anchorNode, anchorParentNodeName, anchorOffset, focusOffset)
     setReplacement(range)
   }
 
   const setBold = (e) => {
     e.preventDefault()
 
-    const parent = document.createElement('b');
-    parent.appendChild(range.extractContents())
-    range.insertNode(parent)
-
+    manipulateString(range, 'b', anchorNode, anchorParentNodeName, anchorOffset, focusOffset)
     setReplacement(range)
   }
   const setUnderline = (e) => {
+
     e.preventDefault()
 
-    if(anchorParentNodeName === 'U'){
-      /*
-      const uRange = range.cloneRange()
-      const {startOffset, endOffset} = range
-      const {nodeValue} = range.commonAncestorContainer
-      uRange.setStart(range.startContainer, 0)
-      const before = nodeValue.substr(0, startOffset)
-      const voi = nodeValue.substr(startOffset, endOffset - startOffset)
-      const after = nodeValue.substr(endOffset)
-
-      const u = document.createElement('u');
-      const bt = document.createTextNode(before)
-      u.appendChild(bt)
-      uRange.insertNode(u)
-
-      const voit = document.createTextNode(voi)
-      u.parentNode.insertBefore(voit, u.nextSibling)
-      const u2 = document.createElement('u');
-      const u2t = document.createTextNode(after)
-      u2.appendChild(u2t)
-      voit.parentNode.insertBefore(u2t, voit.nextSibling)
-      
-      */
-
-      const [startOffset, endOffset] = [anchorOffset, focusOffset].sort()
-      console.log(document.getSelection(), )
-      const {parentElement} = anchorNode
-      const chars = parentElement.innerText
-      const before = chars.substr(0, startOffset)
-      const voi = chars.substr(startOffset, endOffset - startOffset)
-      const after = chars.substr(endOffset)
-
-      var fragment = document.createDocumentFragment();
-
-
-      if(before.length > 0) {
-        const u = document.createElement('u');
-        const bt = document.createTextNode(before)
-        u.appendChild(bt)
-        fragment.appendChild(u)        
-      }
-      
-      const voit = document.createTextNode(voi)
-      fragment.appendChild(voit)
-
-      if(after.length > 0) {
-        const u2 = document.createElement('u');
-        const u2t = document.createTextNode(after)
-        u2.appendChild(u2t)
-        fragment.appendChild(u2)
-      }
-
-      
-      parentElement.parentElement.replaceChild(fragment, parentElement)
-      setReplacement(range)
-
-
-    }else {
-      const parent = document.createElement('u');
-      parent.appendChild(range.extractContents())
-      range.insertNode(parent)
-      
-      setReplacement(range)
-    }
+    manipulateString(range, 'u', anchorNode, anchorParentNodeName, anchorOffset, focusOffset)
+    setReplacement(range)
 
     
   }
   
   const {anchorNode, anchorOffset, focusOffset} = document.getSelection()
 
-  const anchorParentNodeName = anchorNode.parentNode.nodeName
+  const anchorParentNodeName = anchorNode?.parentNode.nodeName
+
+  const isDisabled = (nodeName) => {
+    return !['A', 'U', 'B', 'I'].includes(nodeName) || (anchorParentNodeName !== nodeName && ['A', 'U', 'B', 'I'].includes(anchorParentNodeName))
+  }
 
   return (<div className={cx('EditorActionsMenu')} onClick={e => e.stopPropagation()} style={{position:'fixed', left: left + width, top}}>
     {!link.mode 
     ?<ButtonGroup>
-        <Button size="small" onClick={startLinking}><Icon.Link height="18" width="18" /></Button>
+        <Button size="small" disabled={isDisabled('A')} active={anchorParentNodeName === 'A'}  onClick={!isDisabled('A') && startLinking}><Icon.Link height="18" width="18" /></Button>
 
-        <Button size="small"  onClick={setItalic} ><Icon.Italic height="18" width="18" /></Button>
+        <Button size="small"  disabled={isDisabled('I')} active={anchorParentNodeName === 'I'}  onClick={!isDisabled('I') && setItalic} ><Icon.Italic height="18" width="18" /></Button>
 
-        <Button size="small"   onClick={setBold} ><Icon.Bold height="18" width="18" /></Button>
+        <Button size="small" disabled={isDisabled('B')} active={anchorParentNodeName === 'B'}  onClick={!isDisabled('B') && setBold} ><Icon.Bold height="18" width="18" /></Button>
 
-        <Button size="small" active={anchorParentNodeName === 'U'} onClick={setUnderline}><Icon.Underline height="18" width="18"/></Button>
+        <Button size="small"disabled={isDisabled('U')} active={anchorParentNodeName === 'U'} onClick={!isDisabled('U') && setUnderline}><Icon.Underline height="18" width="18"/></Button>
 
       </ButtonGroup>
-    : <ButtonGroup>
-        <input name="link" id="link" onChange={e => setLink({...link, url: e.target.value})} placeholder="https://" />
-        <Button as="span" size="small"  onClick={injectLink}>ok</Button>
+    : <span ref={linkInputRef}><ButtonGroup>
+        <input  name="link" id="link" autoFocus onChange={e => setLink({...link, url: e.target.value})} placeholder="https://" />
+        <Button as="span" size="small" onClick={injectLink}><Icon.Add /></Button>
       </ButtonGroup>
+      </span>
     }
   </div>)
 }
