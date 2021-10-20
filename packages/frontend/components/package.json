@@ -15,13 +15,17 @@
     "build-storybook": "build-storybook",
     "build:dev": "webpack --config webpack/dev.config.js --watch",
     "build": "webpack --config webpack/prod.config.js",
-    "build:watch": "webpack --config webpack/prod.config.js --watch"
+    "build:watch": "webpack --config webpack/prod.config.js --watch",
+    "babel:build:watch": "babel --watch src --out-dir lib --extensions .ts,.tsx --copy-files && del lib/**/*.stories.mdx",
+    "babel:build": "rimraf ./lib && babel  src --out-dir lib --extensions .ts,.tsx --copy-files && del lib/**/*.stories.mdx"
   },
   "dependencies": {
     "classnames": "^2.2.6"
   },
   "devDependencies": {
+    "@babel/cli": "^7.15.7",
     "@babel/core": "^7.13.10",
+    "@babel/preset-typescript": "^7.15.0",
     "@open-wc/building-rollup": "^1.9.4",
     "@rollup/plugin-typescript": "^8.2.0",
     "@storybook/addon-actions": "^6.1.21",
@@ -32,7 +36,9 @@
     "@types/prop-types": "^15.7.3",
     "@types/react": "^17.0.3",
     "babel-loader": "^8.2.2",
+    "babel-preset-minify": "^0.5.1",
     "deepmerge": "^4.2.2",
+    "del-cli": "^4.0.1",
     "mini-css-extract-plugin": "^1.3.9",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

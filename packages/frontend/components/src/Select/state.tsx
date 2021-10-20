@@ -36,22 +36,41 @@ const SelectContext: React.Context<[SelectConextsState, React.Dispatch<any>]> = 
 export const useSelectContext = () => useContext(SelectContext)
 
 const selectReducer = (state, action) => {
+
+    const getStateValue = () => {
+        const temp = state.options.find(o => o.temp)
+        let c_value = state.value;
+        if(temp && temp.label === "") {
+            c_value = null
+        }else if (temp && temp.label !== "") {
+            const existingOption = state.options.find(o => !o.temp && (o.label.toLowerCase() === temp.label.toLowerCase()))
+
+            c_value = existingOption?.value || temp.value
+        }
+        return c_value
+    }
+
+    const validOption = (option) => {
+        if(!option.temp) return true
+
+        if (option.label === '') return false
+
+        const existingOption = state.options.find(o => !o.temp && (o.label.toLowerCase() === option.label.toLowerCase()))
+
+        if(existingOption?.label) return false
+
+        return true
+    }
     
     const prefix = state.name.toUpperCase()
+    console.log('action', action)
     switch(action.type) {
         case `${prefix}_LIST`:
-            return {...state, listed: true, rect: action.payload.rect, }
+            return {...state, listed: true }
         case `${prefix}_COLLAPSE`:
-            const temp = state.options.find(o => o.temp)
-            let c_value = state.value;
-            if(temp && temp.label === "") {
-                c_value = null
-            }else if (temp && temp.label !== "") {
-                c_value = temp.value
-            }
             
-            
-            const c_options = state.options.filter(o => !(o.temp && o.label === "")).map(o => ({...o, hidden: false}))
+            const c_value = getStateValue()
+            const c_options = state.options.filter(validOption).map(o => ({...o, hidden: false}))
             return {...state, listed: false, options: c_options, value: c_value}
         
         case `${prefix}_SELECT`:           
@@ -77,6 +96,9 @@ const selectReducer = (state, action) => {
         default:
             return state
     }
+
+
+    
 }
 
 

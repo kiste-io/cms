@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames/bind';
 import style from './style.module.scss';
 import SelectContext, {useSelectContext} from './state';
-import Portal from '../Portal';
 import { Icon } from '../Icons';
 const cx = classnames.bind(style)
 
@@ -34,31 +33,40 @@ const InputValue = () => {
 
 const SelectMenu = () => {
 
-    const [ref, setRef] = useState(null)
-    const [{options, rect, listed, value, defaultValue, onChange, small}, dispatch] = useSelectContext()
+    const ref = useRef()
+    const selectRef = useRef()
+    const [{options,  input, label, id, listed, value, defaultValue, onChange, small}, dispatch] = useSelectContext()
 
     
-    const {top, left, width} = rect || {top:0, left:0, width:0}
-
-    const clickListener = (e: MouseEvent) => {
-        const target = e.target as HTMLElement
-        if(ref && !ref.contains(target)) {
-            dispatch({type: 'COLLAPSE'})
-        }
-        if(target.dataset.value && ref && ref.contains(target)) {
-            const {value, label} = target.dataset
-            
-            dispatch({type: 'SELECT', value, label })
-            onChange && onChange({value, label})
-        }
-    }
-
+    
     useEffect(() => {
+        const clickListener = (e: MouseEvent) => {
+            const _ref = ref.current
+            console.log('listed', listed, _ref)
+            if(!_ref) return
+    
+    
+            const target = e.target as HTMLElement
+            
+            if(ref && !listed && (_ref as any).contains(target)) {
+                dispatch({type: 'LIST'})
+            }    
+            else if(ref && listed && !(_ref as any).contains(target)) {
+                dispatch({type: 'COLLAPSE'})
+            }
+            else if(target.dataset.value && ref && (_ref as any).contains(target)) {
+                const {value, label} = target.dataset
+                
+                dispatch({type: 'SELECT', value, label })
+                onChange && onChange({value, label})
+            }
+        }
+
         document.addEventListener('click', clickListener)
         return () => document.removeEventListener('click', clickListener);
-    }, [ref])
+    }, [ref.current, listed])
 
-    
+
 
     const existingCurrentValue = options.find(o => o.value === (value || defaultValue))
     const sortedOptions = existingCurrentValue 
@@ -66,17 +74,23 @@ const SelectMenu = () => {
     : options
 
     const visibleOptions = sortedOptions.filter(o => !o.hidden)
+    
+    console.log('ref listed', listed, ref)
 
-    return listed ? <Portal>
-        <div ref={(ref) => {setRef(ref)}} className={cx('SelectMenu', {small})} style={{top, left, width}}>
+    return <div ref={ref} tabIndex={0} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, input})}> 
+    {label && <label htmlFor={id}>{label}</label>}
+    {listed ? 
+        <div  ref={selectRef} className={cx('SelectMenu', {small})}>
             <InputValue />
             <ul>{
             visibleOptions.map((o, i) => {
                 return <li key={i} className={cx({currentValue: existingCurrentValue && existingCurrentValue.value === o.value})} data-value={o.value} data-label={o.label}>{o.label}</li>
             })
         }</ul></div>
-    </Portal>
-    : null
+    : <SelectValue {...{value: value || defaultValue, options}} />}
+        <Icon.Arrowdown />
+
+    </div>
 }
 
 const SelectValue = ({value, options}) =>  {
@@ -91,31 +105,22 @@ const SelectValue = ({value, options}) =>  {
 
 
 const SelectNode = ({children}) => {
-    const ref = useRef()
-    const [{input, listed, name, defaultValue, value, id, label, options, small}, dispatch] = useSelectContext()
-
-    const handlClick = () => {
-        const rect = (ref.current as HTMLDivElement).getBoundingClientRect()
-        dispatch({type: 'LIST', payload: {rect}})
-    }
-
+    
+    const [{input,  name, defaultValue, value, id,  options}] = useSelectContext()
     
     const selectedValue = (value || defaultValue)
     const existingSelectedValue = options.find(o => o.value === selectedValue) && selectedValue
     const existingSelectedLabel = options.find(o => o.value === existingSelectedValue)?.label || ''
 
-    return <div className={cx('SelectContainer')}><div ref={ref}  tabIndex={0} className={cx('Select', 'toPortal', {listed, value: value || defaultValue, small, children, input})} onClick={handlClick}>
-            {label && <label htmlFor={id}>{label}</label>}
-            {!listed  && <SelectValue {...{value: value || defaultValue, options}} />}
+    return <div className={cx('SelectContainer', {children})}>
+            
             <SelectMenu />
             
-            <Icon.Arrowdown />
             {input && <input type='hidden' name={`${name}[label]`} key={existingSelectedLabel}  id={`input-${id}`}  value={existingSelectedLabel}/> }
-            <select name={`${name}${input ? '[value]' : ''}`} value={existingSelectedValue} id={id}>
+            <select tabIndex={-1} name={`${name}${input ? '[value]' : ''}`} value={existingSelectedValue} id={id}>
                 <option value=""></option>
                 {options.map((o, i) =><option key={`${o.value}_${i}`} value={o.value}>{o.label}</option>)}
             </select>
-        </div>
         {children && <span className={cx('right_children')}>{children}</span>}
         </div>
 

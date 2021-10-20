@@ -79,7 +79,18 @@ import {useState, useEffect} from 'react'
             inputValue='new_input_value'
             name='name'    
             options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}>
-            </Select></>
+            </Select>
+      
+        <div style={{margin: '100px 0'}}>
+        <Select
+            label='Select Number' 
+            input 
+            defaultValue={'1'}
+            name='name'    
+            options={[{value: '1', label:'one'}, {value: '2', label:'two'},{value: '3', label:'three'}]}>
+            </Select>
+            </div>
+            </>
         }}        
     </Story>
 </Canvas>

@@ -1,4 +1,4 @@
-@import 'variables';
+@import '../styles/variables';
 
 .Button {
 
@@ -69,7 +69,6 @@
     svg {
       width: 24px;
       height: 24px;
-      margin: 8px;   
     }
   }
   &.large {
