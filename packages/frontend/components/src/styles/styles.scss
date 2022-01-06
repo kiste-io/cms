@@ -1,2 +1,16 @@
-@use 'variables';
 @use 'reset';
+@import 'variables';
+
+
+:root {
+
+    --font-family-text: #{$font-family-text};        
+    --color-default-500: #{$color-default-500};
+    --color-default: #{$color-default};
+    --color-primary: #{$color-primary};
+    --color-primary-500: #{$color-primary-500};
+    --color-default-100: #{$color-default-100};
+    --padding-large: #{$padding-large};
+    --color-primary-30: #{$color-primary-30};
+    --color-error: #{$color-error};
+}

@@ -272,9 +272,37 @@ const NativeTextarea = ({name, className, editorInnerHTML}) => {
 
 export const Textarea = ({id, name, label, defaultValue=""}) => {
 
-  return <div className={cx('Textarea')}>
-      {label && <label htmlFor={id}>{label}</label>} 
-      <textarea id={id} name={name} defaultValue={defaultValue}></textarea>      
+  
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // The value of the textarea
+  const [value, setValue] = useState<String>('');
+
+  // This function is triggered when textarea changes
+  const textAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setValue(event.target.value);
+  };
+
+  useEffect(() => {
+    if (textareaRef && textareaRef.current) {
+      textareaRef.current.style.height = "0px";
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = scrollHeight + "px";
+    }
+  }, [value]);
+
+  return (
+    <div className={cx('Textarea')}>
+     
+      <textarea
+        name="comment"
+        ref={textareaRef}
+        className={cx(value.length ? 'filled' : '')} 
+        onChange={textAreaChange}
+      >
+        {value}
+      </textarea>
+      {label && <label onClick={() => textareaRef?.current.focus()} htmlFor={id}>{label}</label>} 
     </div>
+  );
 }

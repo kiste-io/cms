@@ -6,7 +6,7 @@ import style from './style.module.scss';
 const cx = classnames.bind(style)
 
 
-export const Input = ({name, label, defaultValue, value, password, onChange, ...props}) => {
+export const Input = ({name, label, defaultValue, value, password, onChange, error, ...props}) => {
 
     const [id] = useState(() => `${name}_${Math.random().toString(36).slice(-5)}`)
     const [filled, setFilled] = useState(defaultValue && defaultValue.length>0) 
@@ -31,7 +31,7 @@ export const Input = ({name, label, defaultValue, value, password, onChange, ...
                     onChange(e.target.value) 
                 }
             }} 
-            className={cx({filled})} 
+            className={cx({filled, error})} 
             {...props}
             />
         <label htmlFor={id}>{label}</label>
@@ -45,7 +45,8 @@ Input.propTypes = {
     defaultValue: PropTypes.string,
     label: PropTypes.string.isRequired,
     onChange: PropTypes.func,
-    list: PropTypes.string
+    list: PropTypes.string,
+    error: PropTypes.bool,
 
   };
   
@@ -53,4 +54,5 @@ Input.defaultProps = {
     password: false,
     defaultValue: '',
     onChange: undefined,
+    error: false
 };

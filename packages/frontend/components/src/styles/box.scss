@@ -6,10 +6,10 @@ $radius-default: 4px;
 @mixin form-box {
     background-color: transparent;
     box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px inset;
-    border:none;
+    border: 2px solid transparent; 
     border-radius: 4px;
     padding: $padding-large;
-    line-height: 1.3rem;
+    padding-top: 20px;
 }
 
 
